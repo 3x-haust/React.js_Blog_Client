@@ -173,9 +173,9 @@ export function Home() {
         animate={{ opacity: 1, y: 0 }}
         className="mb-6 text-center"
       >
-        <p className="text-2xl md:text-4xl leading-snug text-foreground max-w-5xl mx-auto">
+        <p className="text-xl sm:text-2xl md:text-4xl leading-snug text-foreground max-w-5xl mx-auto break-keep">
           아이디어와 열정을
-          <span className="font-semibold bg-foreground text-background px-2 py-0.5 mx-4">
+          <span className="inline-block whitespace-nowrap font-semibold bg-foreground text-background px-1 py-0 sm:px-2 sm:py-0.5 mx-1.5 sm:mx-4 align-baseline">
             남김없이 쏟아
           </span>
           <br />
