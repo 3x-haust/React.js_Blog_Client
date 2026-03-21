@@ -1,0 +1,173 @@
+@import './fonts.css';
+@import './tailwind.css';
+@import './theme.css';
+@import 'katex/dist/katex.min.css';
+
+html,
+body,
+#root {
+  font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+}
+
+button,
+input,
+textarea,
+select {
+  font-family: inherit;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--background);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--muted-foreground);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--primary);
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  opacity: 0.03;
+  z-index: 9999;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+}
+
+* {
+  transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+}
+
+*,
+*::before,
+*::after {
+  border-radius: 0 !important;
+}
+
+.interactive-preview {
+  min-height: 100px;
+}
+
+.npm__react-simple-code-editor__textarea,
+.npm__react-simple-code-editor__textarea:focus {
+  outline: none !important;
+  font-family: 'Fira Code', 'Monaco', 'Consolas', monospace !important;
+}
+
+.prism-code {
+  font-family: 'Fira Code', 'Monaco', 'Consolas', monospace !important;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.live-editor-with-lines {
+  counter-reset: live-editor-line;
+}
+
+.live-editor-with-lines .npm__react-simple-code-editor__textarea,
+.live-editor-with-lines .npm__react-simple-code-editor__textarea:focus {
+  padding-left: 4rem !important;
+}
+
+.live-editor-with-lines .prism-code {
+  padding-left: 4rem !important;
+}
+
+.live-editor-with-lines .token-line {
+  position: relative;
+  display: block;
+}
+
+.live-editor-with-lines .token-line::before {
+  counter-increment: live-editor-line;
+  content: counter(live-editor-line);
+  position: absolute;
+  left: -3rem;
+  width: 2rem;
+  text-align: right;
+  color: var(--muted-foreground);
+  opacity: 0.5;
+  user-select: none;
+  pointer-events: none;
+}
+
+.live-editor-with-lines .token.comment,
+.live-editor-with-lines .token.prolog,
+.live-editor-with-lines .token.doctype,
+.live-editor-with-lines .token.cdata {
+  color: #6a737d;
+}
+
+.live-editor-with-lines .token.punctuation {
+  color: #586069;
+}
+
+.live-editor-with-lines .token.function,
+.live-editor-with-lines .token.class-name {
+  color: #6f42c1;
+}
+
+.live-editor-with-lines .token.keyword,
+.live-editor-with-lines .token.operator,
+.live-editor-with-lines .token.atrule {
+  color: #d73a49;
+}
+
+.live-editor-with-lines .token.string,
+.live-editor-with-lines .token.attr-value {
+  color: #032f62;
+}
+
+.live-editor-with-lines .token.number,
+.live-editor-with-lines .token.boolean,
+.live-editor-with-lines .token.constant,
+.live-editor-with-lines .token.symbol {
+  color: #005cc5;
+}
+
+.dark .live-editor-with-lines .token.comment,
+.dark .live-editor-with-lines .token.prolog,
+.dark .live-editor-with-lines .token.doctype,
+.dark .live-editor-with-lines .token.cdata {
+  color: #8b949e;
+}
+
+.dark .live-editor-with-lines .token.punctuation {
+  color: #c9d1d9;
+}
+
+.dark .live-editor-with-lines .token.function,
+.dark .live-editor-with-lines .token.class-name {
+  color: #d2a8ff;
+}
+
+.dark .live-editor-with-lines .token.keyword,
+.dark .live-editor-with-lines .token.operator,
+.dark .live-editor-with-lines .token.atrule {
+  color: #ff7b72;
+}
+
+.dark .live-editor-with-lines .token.string,
+.dark .live-editor-with-lines .token.attr-value {
+  color: #a5d6ff;
+}
+
+.dark .live-editor-with-lines .token.number,
+.dark .live-editor-with-lines .token.boolean,
+.dark .live-editor-with-lines .token.constant,
+.dark .live-editor-with-lines .token.symbol {
+  color: #79c0ff;
+}
