@@ -5,7 +5,6 @@ import { adminAuth, blogApi } from '../lib/api';
 import { Comment } from '../types';
 import { CommentItem } from './CommentItem';
 import { CommentForm } from './CommentForm';
-import { Button } from './ui/button';
 
 interface CommentSectionProps {
   postSlug: string;
@@ -87,6 +86,21 @@ export function CommentSection({ postSlug }: CommentSectionProps) {
               <CommentItem
                 comment={comment}
                 onReply={() => setReplyTo(comment.id)}
+                onEdit={async () => {
+                  if (!isAdmin) return;
+                  const nextContent = window.prompt('댓글 내용을 수정하세요.', comment.content);
+                  const trimmed = nextContent?.trim();
+                  if (!trimmed) return;
+                  await blogApi.updateComment(postSlug, comment.id, trimmed);
+                  loadComments();
+                }}
+                onDelete={async () => {
+                  if (!isAdmin) return;
+                  const ok = window.confirm('이 댓글을 삭제할까요? 답글도 함께 삭제됩니다.');
+                  if (!ok) return;
+                  await blogApi.deleteComment(postSlug, comment.id);
+                  loadComments();
+                }}
                 isAdmin={isAdmin}
               />
               
@@ -96,6 +110,21 @@ export function CommentSection({ postSlug }: CommentSectionProps) {
                     <CommentItem
                       key={reply.id}
                       comment={reply}
+                      onEdit={async () => {
+                        if (!isAdmin) return;
+                        const nextContent = window.prompt('댓글 내용을 수정하세요.', reply.content);
+                        const trimmed = nextContent?.trim();
+                        if (!trimmed) return;
+                        await blogApi.updateComment(postSlug, reply.id, trimmed);
+                        loadComments();
+                      }}
+                      onDelete={async () => {
+                        if (!isAdmin) return;
+                        const ok = window.confirm('이 댓글을 삭제할까요?');
+                        if (!ok) return;
+                        await blogApi.deleteComment(postSlug, reply.id);
+                        loadComments();
+                      }}
                       isReply
                       isAdmin={isAdmin}
                     />

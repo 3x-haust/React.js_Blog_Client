@@ -181,6 +181,17 @@ export const blogApi = {
       body: JSON.stringify({ content }),
     }),
 
+  updateComment: (slug: string, commentId: string, content: string) =>
+    request<Comment>(`/posts/${encodeURIComponent(slug)}/comments/${encodeURIComponent(commentId)}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ content }),
+    }),
+
+  deleteComment: (slug: string, commentId: string) =>
+    request<boolean>(`/posts/${encodeURIComponent(slug)}/comments/${encodeURIComponent(commentId)}`, {
+      method: 'DELETE',
+    }),
+
   getHeartStatus: (slug: string, clientId: string) =>
     request<{ liked: boolean; heartCount: number }>(
       `/posts/${encodeURIComponent(slug)}/heart?clientId=${encodeURIComponent(clientId)}`,

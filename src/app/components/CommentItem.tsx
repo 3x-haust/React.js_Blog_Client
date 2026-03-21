@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { formatDistanceToNow } from 'date-fns';
 import { ko } from 'date-fns/locale';
-import { Reply } from 'lucide-react';
+import { Reply, Pencil, Trash2 } from 'lucide-react';
 import { Comment } from '../types';
 import { Button } from './ui/button';
 import { Card } from './ui/card';
@@ -10,10 +10,12 @@ interface CommentItemProps {
   comment: Comment;
   isAdmin: boolean;
   onReply?: () => void;
+  onEdit?: () => void;
+  onDelete?: () => void;
   isReply?: boolean;
 }
 
-export function CommentItem({ comment, isAdmin, onReply, isReply }: CommentItemProps) {
+export function CommentItem({ comment, isAdmin, onReply, onEdit, onDelete, isReply }: CommentItemProps) {
   const [isAvatarError, setIsAvatarError] = useState(false);
 
   return (
@@ -55,16 +57,44 @@ export function CommentItem({ comment, isAdmin, onReply, isReply }: CommentItemP
             {comment.content}
           </p>
 
-          {isAdmin && onReply && !isReply && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onReply}
-              className="h-7 px-2 text-xs"
-            >
-              <Reply className="w-3 h-3 mr-1" />
-              관리자 답글
-            </Button>
+          {isAdmin && (
+            <div className="flex items-center gap-1">
+              {onReply && !isReply && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={onReply}
+                  className="h-7 px-2 text-xs"
+                >
+                  <Reply className="w-3 h-3 mr-1" />
+                  관리자 답글
+                </Button>
+              )}
+
+              {onEdit && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={onEdit}
+                  className="h-7 px-2 text-xs"
+                >
+                  <Pencil className="w-3 h-3 mr-1" />
+                  수정
+                </Button>
+              )}
+
+              {onDelete && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={onDelete}
+                  className="h-7 px-2 text-xs text-destructive hover:text-destructive"
+                >
+                  <Trash2 className="w-3 h-3 mr-1" />
+                  삭제
+                </Button>
+              )}
+            </div>
           )}
         </div>
       </div>
