@@ -17,6 +17,15 @@ interface ContentRendererProps {
 }
 
 const markdownComponents: Components = {
+  strong: ({ ...props }) => (
+    <strong {...props} className="font-extrabold text-foreground" style={{ fontWeight: 800 }} />
+  ),
+  em: ({ ...props }) => (
+    <em {...props} className="italic text-foreground/90" />
+  ),
+  p: ({ ...props }) => (
+    <p {...props} className="m-0 leading-relaxed" />
+  ),
   a: ({ ...props }) => (
     <a
       {...props}
