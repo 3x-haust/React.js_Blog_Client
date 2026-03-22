@@ -422,30 +422,8 @@ export function Editor() {
     toast.success('임시저장을 삭제했습니다.');
   };
 
-  const handleImportMarkdown = async (file: File) => {
-    if (!/\.md$|\.markdown$/i.test(file.name)) {
-      toast.error('마크다운(.md) 파일만 가져올 수 있습니다.');
-      return;
-    }
-
-    const hasAnyEditorContent =
-      Boolean(title.trim()) ||
-      Boolean(thumbnail.trim()) ||
-      Boolean(seriesName.trim()) ||
-      tags.length > 0 ||
-      content.length > 0;
-
-    if (hasAnyEditorContent) {
-      const shouldReplace = window.confirm(
-        '현재 작성 중인 내용이 마크다운 내용으로 교체됩니다. 계속할까요?',
-      );
-      if (!shouldReplace) {
-        return;
-      }
-    }
-
+  const processImportedMarkdown = (markdown: string) => {
     try {
-      const markdown = await file.text();
       const parsed = parseMarkdownToEditorContent(markdown);
 
       if (!parsed.content.length) {
@@ -480,8 +458,58 @@ export function Editor() {
 
       toast.success(`마크다운 가져오기 완료 (${parsed.content.length}개 블록)`);
     } catch {
+      toast.error('마크다운을 처리하지 못했습니다.');
+    }
+  };
+
+  const handleImportMarkdown = async (file: File) => {
+    if (!/\.md$|\.markdown$/i.test(file.name)) {
+      toast.error('마크다운(.md) 파일만 가져올 수 있습니다.');
+      return;
+    }
+
+    const hasAnyEditorContent =
+      Boolean(title.trim()) ||
+      Boolean(thumbnail.trim()) ||
+      Boolean(seriesName.trim()) ||
+      tags.length > 0 ||
+      content.length > 0;
+
+    if (hasAnyEditorContent) {
+      const shouldReplace = window.confirm(
+        '현재 작성 중인 내용이 마크다운 내용으로 교체됩니다. 계속할까요?',
+      );
+      if (!shouldReplace) {
+        return;
+      }
+    }
+
+    try {
+      const markdown = await file.text();
+      processImportedMarkdown(markdown);
+    } catch {
       toast.error('마크다운 파일을 불러오지 못했습니다.');
     }
+  };
+
+  const handlePasteMarkdown = (markdown: string) => {
+    const hasAnyEditorContent =
+      Boolean(title.trim()) ||
+      Boolean(thumbnail.trim()) ||
+      Boolean(seriesName.trim()) ||
+      tags.length > 0 ||
+      content.length > 0;
+
+    if (hasAnyEditorContent) {
+      const shouldReplace = window.confirm(
+        '현재 작성 중인 내용이 마크다운 내용으로 교체됩니다. 계속할까요?',
+      );
+      if (!shouldReplace) {
+        return;
+      }
+    }
+
+    processImportedMarkdown(markdown);
   };
 
   if (!isAdmin) {
@@ -538,6 +566,7 @@ export function Editor() {
           onSave={handleManualSave}
           onOpenDraftList={handleOpenDraftList}
           onImportMarkdown={handleImportMarkdown}
+          onPasteMarkdown={handlePasteMarkdown}
           onPublish={() => setShowPublishDialog(true)}
           isSaving={isSavingDraft}
           isPublishing={isPublishing}
