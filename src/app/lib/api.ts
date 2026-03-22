@@ -125,8 +125,14 @@ export const adminAuth = {
       await authApi.me();
       return true;
     } catch {
-      setAdminAuthenticated(false);
-      return false;
+      try {
+        await authApi.refresh();
+        await authApi.me();
+        return true;
+      } catch {
+        setAdminAuthenticated(false);
+        return false;
+      }
     }
   },
 

@@ -480,6 +480,66 @@ export function EditorBlock({ block, index, onUpdate, onDelete, onMove, onInsert
           </div>
         );
 
+      case 'iframe':
+        return (
+          <div className="space-y-2">
+            <Input
+              value={block.content}
+              onChange={(e) => handleContentChange(e.target.value)}
+              placeholder="캡션 (선택사항)"
+            />
+            <Input
+              value={block.metadata?.url || ''}
+              onChange={(e) =>
+                onUpdate(block.id, {
+                  metadata: { ...block.metadata, url: e.target.value.trim() },
+                })
+              }
+              placeholder="https://www.youtube.com/embed/..."
+            />
+            <Input
+              value={String(block.metadata?.title ?? '')}
+              onChange={(e) =>
+                onUpdate(block.id, {
+                  metadata: { ...block.metadata, title: e.target.value },
+                })
+              }
+              placeholder="iframe title (접근성)"
+            />
+            <Input
+              type="number"
+              min={160}
+              value={String(block.metadata?.height ?? 420)}
+              onChange={(e) => {
+                const nextHeight = Number(e.target.value);
+                onUpdate(block.id, {
+                  metadata: {
+                    ...block.metadata,
+                    height: Number.isFinite(nextHeight)
+                      ? Math.max(160, Math.floor(nextHeight))
+                      : 420,
+                  },
+                });
+              }}
+              placeholder="높이(px)"
+            />
+            {block.metadata?.url && (
+              <div className="overflow-hidden rounded-lg border border-border">
+                <iframe
+                  src={block.metadata.url}
+                  title={block.metadata?.title || block.content || 'Embedded content'}
+                  className="w-full"
+                  style={{ height: `${block.metadata?.height ?? 420}px` }}
+                  loading="lazy"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                  referrerPolicy="strict-origin-when-cross-origin"
+                  allowFullScreen
+                />
+              </div>
+            )}
+          </div>
+        );
+
       case 'interactive':
         const editMode: 'readonly' | 'full' | 'restricted' =
           block.metadata?.editable === false

@@ -21,6 +21,7 @@ export function EditorCanvas({ content, onChange }: EditorCanvasProps) {
     { type: 'link', label: '링크' },
     { type: 'code', label: '코드' },
     { type: 'interactive', label: '인터랙티브' },
+    { type: 'iframe', label: 'iframe' },
     { type: 'image', label: '이미지' },
     { type: 'quote', label: '인용' },
     { type: 'callout', label: '콜아웃' },
@@ -86,6 +87,14 @@ export function EditorCanvas({ content, onChange }: EditorCanvasProps) {
     </Card>
   );
 }`;
+        break;
+      case 'iframe':
+        defaultContent = '임베드 콘텐츠';
+        defaultMetadata = {
+          url: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
+          height: 420,
+          title: '임베드 콘텐츠',
+        };
         break;
       case 'callout':
         defaultMetadata = { variant: 'info' };

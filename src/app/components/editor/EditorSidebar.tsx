@@ -15,6 +15,7 @@ import {
   Info,
   Sigma,
   Play,
+  Frame,
 } from 'lucide-react';
 import { BlockType } from '../../types';
 import { Card } from '../ui/card';
@@ -30,6 +31,7 @@ const BLOCK_TYPES = [
   { type: 'link' as BlockType, icon: Link2, label: 'Link', color: 'text-foreground' },
   { type: 'code' as BlockType, icon: Code, label: 'Code Block', color: 'text-foreground' },
   { type: 'interactive' as BlockType, icon: Play, label: 'Interactive', color: 'text-foreground' },
+  { type: 'iframe' as BlockType, icon: Frame, label: 'iFrame', color: 'text-foreground' },
   { type: 'image' as BlockType, icon: Image, label: 'Image', color: 'text-foreground/80' },
   { type: 'divider' as BlockType, icon: Minus, label: 'Divider', color: 'text-muted-foreground' },
   { type: 'quote' as BlockType, icon: Quote, label: 'Quote', color: 'text-foreground' },

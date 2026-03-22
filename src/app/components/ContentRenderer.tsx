@@ -307,6 +307,29 @@ export function ContentRenderer({
               </figure>
             );
 
+          case 'iframe':
+            return (
+              <figure key={block.id} className="my-8">
+                <div className="overflow-hidden rounded-lg border border-border bg-card">
+                  <iframe
+                    src={block.metadata?.url}
+                    title={block.metadata?.title || block.content || 'Embedded content'}
+                    className="w-full"
+                    style={{ height: `${block.metadata?.height ?? 420}px` }}
+                    loading="lazy"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                    referrerPolicy="strict-origin-when-cross-origin"
+                    allowFullScreen
+                  />
+                </div>
+                {block.content && (
+                  <figcaption className="text-center text-sm text-muted-foreground mt-2">
+                    {block.content}
+                  </figcaption>
+                )}
+              </figure>
+            );
+
           default:
             return null;
         }

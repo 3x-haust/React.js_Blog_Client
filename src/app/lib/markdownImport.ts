@@ -73,6 +73,12 @@ const splitTableCells = (line: string): string[] => {
     .map((cell) => cell.trim());
 };
 
+const extractIframeAttribute = (html: string, attribute: string): string | null => {
+  const regex = new RegExp(`${attribute}\\s*=\\s*[\"']([^\"']+)[\"']`, 'i');
+  const match = html.match(regex);
+  return match?.[1] ?? null;
+};
+
 const parseInlineListValue = (value: string): string[] => {
   const trimmed = value.trim();
   if (!trimmed) {
@@ -223,6 +229,35 @@ export const parseMarkdownToEditorContent = (rawMarkdown: string): ParsedMarkdow
           url: imageMatch[2].trim(),
         },
       });
+      index += 1;
+      continue;
+    }
+
+    if (trimmed.startsWith('<iframe')) {
+      const iframeLines: string[] = [trimmed];
+
+      while (index + 1 < lines.length && !iframeLines[iframeLines.length - 1].includes('</iframe>')) {
+        index += 1;
+        iframeLines.push(lines[index].trim());
+      }
+
+      const iframeHtml = iframeLines.join(' ');
+      const src = extractIframeAttribute(iframeHtml, 'src') ?? '';
+      const title = extractIframeAttribute(iframeHtml, 'title') ?? '';
+      const rawHeight = extractIframeAttribute(iframeHtml, 'height');
+      const parsedHeight = rawHeight ? Number(rawHeight) : NaN;
+
+      blocks.push({
+        id: createBlockId(),
+        type: 'iframe',
+        content: title,
+        metadata: {
+          url: src,
+          title,
+          height: Number.isFinite(parsedHeight) ? Math.max(160, Math.floor(parsedHeight)) : 420,
+        },
+      });
+
       index += 1;
       continue;
     }

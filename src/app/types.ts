@@ -7,6 +7,7 @@ export type BlockType =
   | 'link'
   | 'code'
   | 'image'
+  | 'iframe'
   | 'divider'
   | 'quote'
   | 'callout'
@@ -25,6 +26,8 @@ export interface ContentBlock {
     listStyle?: 'unordered' | 'ordered';
     alt?: string;
     variant?: 'info' | 'warning' | 'success' | 'error';
+    height?: number;
+    title?: string;
     editable?: boolean | 'restricted';
     editableLines?: number[];
     scope?: string;
