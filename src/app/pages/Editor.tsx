@@ -64,6 +64,10 @@ export function Editor() {
   const deferredContent = useDeferredValue(content);
   const isEditMode = Boolean(slug);
 
+  const editorScrollRef = useRef<HTMLDivElement>(null);
+  const previewScrollRef = useRef<HTMLDivElement>(null);
+  const isSyncingScroll = useRef(false);
+
   const getEditorTagsWithSeries = () => [
     ...tags,
     ...(seriesName.trim() ? [`series:${seriesName.trim()}`] : []),
@@ -109,8 +113,6 @@ export function Editor() {
   const refreshDraftList = () => {
     setDraftList(listDrafts());
   };
-
-
 
   const validateSeriesNameInput = (value: string): boolean => {
     if (!value.trim()) {
@@ -512,6 +514,23 @@ export function Editor() {
     processImportedMarkdown(markdown);
   };
 
+  const handleScroll = (source: 'editor' | 'preview') => {
+    if (isSyncingScroll.current) return;
+
+    const sourceEl = source === 'editor' ? editorScrollRef.current : previewScrollRef.current;
+    const targetEl = source === 'editor' ? previewScrollRef.current : editorScrollRef.current;
+
+    if (!sourceEl || !targetEl) return;
+
+    isSyncingScroll.current = true;
+    const scrollPercentage = sourceEl.scrollTop / (sourceEl.scrollHeight - sourceEl.clientHeight);
+    targetEl.scrollTop = scrollPercentage * (targetEl.scrollHeight - targetEl.clientHeight);
+
+    setTimeout(() => {
+      isSyncingScroll.current = false;
+    }, 50);
+  };
+
   if (!isAdmin) {
     return (
       <div className="max-w-xl mx-auto px-4 py-16">
@@ -579,7 +598,11 @@ export function Editor() {
           <div className="flex-1 p-5 md:p-7 lg:p-9 min-w-0">
             <PanelGroup direction="horizontal" className="h-[calc(100vh-10rem)] min-h-[calc(100vh-10rem)]">
               <Panel defaultSize={50} minSize={30} className="h-full">
-                <section className="min-w-0 pr-3 h-full">
+                <section 
+                  className="min-w-0 pr-3 h-full overflow-y-auto"
+                  ref={editorScrollRef}
+                  onScroll={() => handleScroll('editor')}
+                >
                   <EditorCanvas
                     content={content}
                     onChange={setContent}
@@ -590,7 +613,11 @@ export function Editor() {
               <PanelResizeHandle className="w-px self-stretch bg-border hover:bg-foreground/30 transition-colors" />
 
               <Panel defaultSize={50} minSize={25} className="h-full">
-                <aside className="min-w-0 pl-3 h-full">
+                <aside 
+                  className="min-w-0 pl-3 h-full overflow-y-auto"
+                  ref={previewScrollRef}
+                  onScroll={() => handleScroll('preview')}
+                >
                   <h3 className="text-sm text-muted-foreground mb-4">미리보기</h3>
                   <article className="prose prose-lg dark:prose-invert max-w-none">
                     <h1>{deferredTitle || '제목 없음'}</h1>
