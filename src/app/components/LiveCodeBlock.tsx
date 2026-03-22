@@ -67,27 +67,23 @@ export function LiveCodeBlock({
 
   const combinedScope = { ...defaultScope, ...scope };
 
-  const restrictedLineIndexes =
-    editable === 'restricted'
-      ? editableLines?.length
-        ? editableLines.filter((lineIndex) =>
-            Number.isInteger(lineIndex) && lineIndex >= 0,
-          )
-        : initialCode
-            .split('\n')
-            .map((line, index) => (line.includes('// ✏️') ? index : -1))
-            .filter((index) => index !== -1)
-      : [];
+  const hasInlineMarkers = initialCode.includes('[[') && initialCode.includes(']]');
+  
+  const actualEditable = 
+    editable === 'restricted' || hasInlineMarkers 
+      ? 'restricted' 
+      : editable;
 
-  const isFullyEditable = editable === true;
-  const isReadOnly = editable === false;
+  const isFullyEditable = actualEditable === true;
+  const isReadOnly = actualEditable === false;
+  const isRestricted = actualEditable === 'restricted';
 
   if (isReadOnly) {
     if (plainReadOnly) {
       return (
         <LiveProvider
           key={key}
-          code={code}
+          code={code.replace(/\[\[(.*?)\]\]/g, '$1')} // 렌더링 시 마커 제거
           scope={combinedScope}
           theme={theme === 'dark' ? themes.vsDark : themes.github}
           language="jsx"
@@ -107,7 +103,7 @@ export function LiveCodeBlock({
       >
         <LiveProvider
           key={key}
-          code={code}
+          code={code.replace(/\[\[(.*?)\]\]/g, '$1')} // 렌더링 시 마커 제거
           scope={combinedScope}
           theme={theme === 'dark' ? themes.vsDark : themes.github}
           language="jsx"
@@ -132,7 +128,7 @@ export function LiveCodeBlock({
     >
       <LiveProvider
         key={key}
-        code={code}
+        code={code.replace(/\[\[(.*?)\]\]/g, '$1')} // 실제 실행 시에는 마커 제거
         scope={combinedScope}
         theme={theme === 'dark' ? themes.vsDark : themes.github}
         language="jsx"
@@ -160,7 +156,7 @@ export function LiveCodeBlock({
           <div className="border-b border-border">
             <div className="bg-muted/30 px-4 py-2 border-b border-border">
               <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                코드
+                코드 {isRestricted && '(일부 영역만 수정 가능)'}
               </span>
             </div>
             {isFullyEditable ? (
@@ -174,7 +170,6 @@ export function LiveCodeBlock({
               <RestrictedLiveEditor
                 code={code}
                 onChange={setCode}
-                editableLines={restrictedLineIndexes}
                 language="jsx"
                 theme={theme === 'dark' ? themes.vsDark : themes.github}
               />
