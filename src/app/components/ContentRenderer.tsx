@@ -61,11 +61,12 @@ export function ContentRenderer({
         switch (block.type) {
           case 'heading':
             const level = block.metadata?.level || 2;
-            const HeadingTag = `h${level}` as keyof JSX.IntrinsicElements;
+            const HeadingTag = `h${level}` as any;
             return (
               <HeadingTag
                 key={block.id}
                 id={`heading-${block.id}`}
+                data-block-id={block.id}
                 className="scroll-mt-24"
               >
                 {block.content}
@@ -74,7 +75,7 @@ export function ContentRenderer({
 
           case 'paragraph':
             return (
-              <div key={block.id} className="mb-6 leading-relaxed">
+              <div key={block.id} data-block-id={block.id} className="mb-6 leading-relaxed">
                 <ReactMarkdown
                   remarkPlugins={[remarkGfm, remarkMath]}
                   rehypePlugins={[rehypeKatex]}
@@ -101,6 +102,7 @@ export function ContentRenderer({
             return (
               <ListTag
                 key={block.id}
+                data-block-id={block.id}
                 className={`mb-6 pl-6 ${isOrdered ? 'list-decimal' : 'list-disc'}`}
               >
                 {items.map((item, index) => (
@@ -129,7 +131,7 @@ export function ContentRenderer({
             }
 
             return (
-              <ul key={block.id} className="mb-6 space-y-2">
+              <ul key={block.id} data-block-id={block.id} className="mb-6 space-y-2">
                 {rows.map((row, index) => {
                   const match = row.match(/^\[(x|X|\s)\]\s*(.+)$/);
                   const checked = Boolean(match && match[1].toLowerCase() === 'x');
@@ -182,7 +184,7 @@ export function ContentRenderer({
             const [header, ...body] = rows;
 
             return (
-              <div key={block.id} className="mb-6 overflow-x-auto border border-border bg-card">
+              <div key={block.id} data-block-id={block.id} className="mb-6 overflow-x-auto border border-border bg-card">
                 <table className="w-full border-collapse text-sm">
                   <thead>
                     <tr>
@@ -211,7 +213,7 @@ export function ContentRenderer({
 
           case 'link':
             return (
-              <p key={block.id} className="mb-6">
+              <p key={block.id} data-block-id={block.id} className="mb-6">
                 <a
                   href={block.metadata?.url || '#'}
                   target="_blank"
@@ -225,11 +227,12 @@ export function ContentRenderer({
 
           case 'code':
             return (
-              <CodeBlock
-                key={block.id}
-                code={block.content}
-                language={block.metadata?.language || 'typescript'}
-              />
+              <div key={block.id} data-block-id={block.id}>
+                <CodeBlock
+                  code={block.content}
+                  language={block.metadata?.language || 'typescript'}
+                />
+              </div>
             );
 
           case 'interactive':
@@ -240,20 +243,22 @@ export function ContentRenderer({
               ? JSON.parse(block.metadata.scope) 
               : {};
             return (
-              <LiveCodeBlock
-                key={block.id}
-                code={block.content}
-                editable={block.metadata?.editable === true ? true : block.metadata?.editable === 'restricted' ? 'restricted' : false}
-                editableLines={block.metadata?.editableLines}
-                scope={parsedScope}
-                plainReadOnly={plainReadOnlyInteractive}
-              />
+              <div key={block.id} data-block-id={block.id}>
+                <LiveCodeBlock
+                  code={block.content}
+                  editable={block.metadata?.editable === true ? true : block.metadata?.editable === 'restricted' ? 'restricted' : false}
+                  editableLines={block.metadata?.editableLines}
+                  scope={parsedScope}
+                  plainReadOnly={plainReadOnlyInteractive}
+                />
+              </div>
             );
 
           case 'quote':
             return (
               <blockquote
                 key={block.id}
+                data-block-id={block.id}
                 className="border-l-4 border-primary pl-6 py-2 my-6 italic text-lg"
               >
                 {block.content}
@@ -261,7 +266,7 @@ export function ContentRenderer({
             );
 
           case 'divider':
-            return <Separator key={block.id} className="my-8" />;
+            return <div key={block.id} data-block-id={block.id}><Separator className="my-8" /></div>;
 
           case 'callout':
             const variant = block.metadata?.variant || 'info';
@@ -273,14 +278,14 @@ export function ContentRenderer({
             };
             const Icon = icons[variant];
             const colors = {
-              info: 'border-border bg-muted/40',
-              warning: 'border-border bg-muted/60',
-              success: 'border-border bg-muted/50',
-              error: 'border-border bg-muted/70',
+              info: 'border-blue-200 bg-blue-50 text-blue-900 dark:border-blue-800 dark:bg-blue-900/20 dark:text-blue-200',
+              warning: 'border-amber-200 bg-amber-50 text-amber-900 dark:border-amber-800 dark:bg-amber-900/20 dark:text-amber-200',
+              success: 'border-green-200 bg-green-50 text-green-900 dark:border-green-800 dark:bg-green-900/20 dark:text-green-200',
+              error: 'border-red-200 bg-red-50 text-red-900 dark:border-red-800 dark:bg-red-900/20 dark:text-red-200',
             };
 
             return (
-              <Alert key={block.id} className={`my-6 ${colors[variant]}`}>
+              <Alert key={block.id} data-block-id={block.id} className={`my-6 ${colors[variant]}`}>
                 <Icon className="h-4 w-4" />
                 <AlertDescription className="ml-2">
                   {block.content}
@@ -290,7 +295,7 @@ export function ContentRenderer({
 
           case 'math':
             return (
-              <div key={block.id} className="my-6 overflow-x-auto">
+              <div key={block.id} data-block-id={block.id} className="my-6 overflow-x-auto">
                 <ReactMarkdown
                   remarkPlugins={[remarkMath]}
                   rehypePlugins={[rehypeKatex]}
@@ -302,7 +307,7 @@ export function ContentRenderer({
 
           case 'image':
             return (
-              <figure key={block.id} className="my-8">
+              <figure key={block.id} data-block-id={block.id} className="my-8">
                 <img
                   src={block.metadata?.url}
                   alt={block.metadata?.alt || block.content}
@@ -318,7 +323,7 @@ export function ContentRenderer({
 
           case 'iframe':
             return (
-              <figure key={block.id} className="my-8">
+              <figure key={block.id} data-block-id={block.id} className="my-8">
                 <div className="overflow-hidden rounded-lg border border-border bg-card">
                   <iframe
                     src={block.metadata?.url}

@@ -1,5 +1,6 @@
 import { Post, Comment, User } from '../types';
 import { samplePosts } from './mockData';
+import { blogApi } from './api';
 
 const STORAGE_KEYS = {
   POSTS: 'dev-blog-posts',
@@ -42,13 +43,13 @@ export const getPost = (slug: string): Post | undefined => {
 export const savePost = (post: Post): void => {
   const posts = getPosts();
   const index = posts.findIndex(p => p.id === post.id);
-  
+
   if (index >= 0) {
     posts[index] = post;
   } else {
     posts.unshift(post);
   }
-  
+
   localStorage.setItem(STORAGE_KEYS.POSTS, JSON.stringify(posts));
 };
 
@@ -78,10 +79,10 @@ export const addReaction = (slug: string): void => {
 export const getComments = (postId: string): Comment[] => {
   const comments = localStorage.getItem(STORAGE_KEYS.COMMENTS);
   const allComments: Comment[] = comments ? JSON.parse(comments) : [];
-  
+
   const postComments = allComments.filter(c => c.postId === postId);
   const rootComments = postComments.filter(c => !c.parentId);
-  
+
   return rootComments.map(comment => ({
     ...comment,
     replies: postComments.filter(c => c.parentId === comment.id),
@@ -91,14 +92,14 @@ export const getComments = (postId: string): Comment[] => {
 export const saveComment = (comment: Comment): void => {
   const comments = localStorage.getItem(STORAGE_KEYS.COMMENTS);
   const allComments: Comment[] = comments ? JSON.parse(comments) : [];
-  
+
   const index = allComments.findIndex(c => c.id === comment.id);
   if (index >= 0) {
     allComments[index] = comment;
   } else {
     allComments.push(comment);
   }
-  
+
   localStorage.setItem(STORAGE_KEYS.COMMENTS, JSON.stringify(allComments));
 };
 
@@ -130,105 +131,32 @@ export const setTheme = (theme: 'light' | 'dark'): void => {
   localStorage.setItem(STORAGE_KEYS.THEME, theme);
 };
 
-const createDraftId = (): string => {
-  if (typeof crypto !== 'undefined' && crypto.randomUUID) {
-    return crypto.randomUUID();
-  }
-  return `draft-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+export const listDrafts = async (): Promise<DraftPost[]> => {
+  return blogApi.getDrafts();
 };
 
-const getLegacyDraft = (): Partial<Post> | null => {
-  const draft = localStorage.getItem(STORAGE_KEYS.DRAFT);
-  return draft ? JSON.parse(draft) : null;
+export const saveDraft = async (post: Partial<Post>, draftId?: string): Promise<DraftPost> => {
+  const result = await blogApi.saveDraft({
+    id: draftId,
+    title: post.title ?? '',
+    thumbnail: post.thumbnail ?? '',
+    tags: post.tags ?? [],
+    content: post.content ?? [],
+  });
+  return result;
 };
 
-const normalizeDraftPost = (post: Partial<Post>, id?: string): DraftPost => ({
-  id: id ?? createDraftId(),
-  title: post.title ?? '',
-  thumbnail: post.thumbnail ?? '',
-  tags: post.tags ?? [],
-  content: post.content ?? [],
-  updatedAt: new Date().toISOString(),
-});
-
-const migrateLegacyDraftIfNeeded = (): DraftPost[] => {
-  const draftsRaw = localStorage.getItem(STORAGE_KEYS.DRAFTS);
-  if (draftsRaw) {
-    return JSON.parse(draftsRaw) as DraftPost[];
-  }
-
-  const legacy = getLegacyDraft();
-  if (!legacy) {
-    return [];
-  }
-
-  const migrated = [normalizeDraftPost(legacy)];
-  localStorage.setItem(STORAGE_KEYS.DRAFTS, JSON.stringify(migrated));
-  localStorage.removeItem(STORAGE_KEYS.DRAFT);
-  return migrated;
-};
-
-export const listDrafts = (): DraftPost[] => {
-  const drafts = migrateLegacyDraftIfNeeded();
-  return [...drafts].sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
-};
-
-export const saveDraft = (post: Partial<Post>, draftId?: string): DraftPost => {
-  const drafts = listDrafts();
-  const normalized = normalizeDraftPost(post, draftId);
-  const index = drafts.findIndex((draft) => draft.id === normalized.id);
-
-  if (index >= 0) {
-    drafts[index] = normalized;
-  } else {
-    drafts.unshift(normalized);
-  }
-
-  localStorage.setItem(STORAGE_KEYS.DRAFTS, JSON.stringify(drafts));
-  localStorage.setItem(STORAGE_KEYS.DRAFT, JSON.stringify(post));
-  return normalized;
-};
-
-export const getDraft = (draftId?: string): Partial<Post> | null => {
-  const drafts = listDrafts();
-
-  if (draftId) {
-    const target = drafts.find((draft) => draft.id === draftId);
-    if (!target) return null;
-    const { id: _id, updatedAt: _updatedAt, ...rest } = target;
-    return rest;
-  }
-
-  const latest = drafts[0];
-  if (!latest) {
+export const getDraftById = async (draftId: string): Promise<DraftPost | null> => {
+  try {
+    return await blogApi.getDraft(draftId);
+  } catch {
     return null;
   }
-
-  const { id: _id, updatedAt: _updatedAt, ...rest } = latest;
-  return rest;
 };
 
-export const getDraftById = (draftId: string): DraftPost | null => {
-  const drafts = listDrafts();
-  return drafts.find((draft) => draft.id === draftId) ?? null;
-};
-
-export const clearDraft = (draftId?: string): void => {
-  if (!draftId) {
-    localStorage.removeItem(STORAGE_KEYS.DRAFT);
-    localStorage.removeItem(STORAGE_KEYS.DRAFTS);
-    return;
-  }
-
-  const drafts = listDrafts().filter((draft) => draft.id !== draftId);
-  localStorage.setItem(STORAGE_KEYS.DRAFTS, JSON.stringify(drafts));
-
-  const nextLatest = drafts[0];
-  if (nextLatest) {
-    const { id: _id, updatedAt: _updatedAt, ...rest } = nextLatest;
-    localStorage.setItem(STORAGE_KEYS.DRAFT, JSON.stringify(rest));
-  } else {
-    localStorage.removeItem(STORAGE_KEYS.DRAFT);
+export const clearDraft = async (draftId: string): Promise<void> => {
+  if (draftId) {
+    await blogApi.deleteDraft(draftId);
   }
 };
 

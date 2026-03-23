@@ -88,7 +88,7 @@ export function LiveCodeBlock({
           theme={theme === 'dark' ? themes.vsDark : themes.github}
           language="jsx"
         >
-          <div className="my-6 p-0 bg-transparent min-h-[220px]">
+          <div className="my-6 p-0 bg-transparent">
             <LivePreview />
           </div>
         </LiveProvider>
@@ -110,9 +110,18 @@ export function LiveCodeBlock({
         >
           <div className="flex items-center justify-between px-4 py-3 bg-muted/30 border-b border-border">
             <span className="text-sm font-medium">미리보기</span>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={handleReset}
+              className="gap-2"
+            >
+              <RotateCcw className="w-3.5 h-3.5" />
+              초기화
+            </Button>
           </div>
 
-          <div className="p-6 bg-background min-h-[300px]">
+          <div className="p-6 bg-background">
             <LivePreview />
           </div>
         </LiveProvider>

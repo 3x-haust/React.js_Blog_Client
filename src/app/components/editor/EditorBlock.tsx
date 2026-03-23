@@ -34,63 +34,7 @@ interface ChecklistItem {
 export function EditorBlock({ block, index, onUpdate, onDelete, onMove, onInsertBlock }: EditorBlockProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const blockRef = useRef<HTMLDivElement | null>(null);
-  const [editableLinesInput, setEditableLinesInput] = useState('');
   const isDividerBlock = block.type === 'divider';
-
-  useEffect(() => {
-    if (block.type !== 'interactive') {
-      return;
-    }
-
-    const lines = block.metadata?.editableLines;
-    const normalized = lines?.length
-      ? [...lines]
-          .sort((a, b) => a - b)
-          .map((lineIndex) => String(lineIndex + 1))
-          .join(',')
-      : '';
-
-    setEditableLinesInput(normalized);
-  }, [block.id, block.type, block.metadata?.editableLines]);
-
-  const parseEditableLines = (value: string): { lines: number[]; hasInvalid: boolean } => {
-    const tokens = value
-      .split(',')
-      .map((token) => token.trim())
-      .filter(Boolean);
-
-    const parsed = new Set<number>();
-    let hasInvalid = false;
-
-    tokens.forEach((token) => {
-      const rangeMatch = token.match(/^(\d+)-(\d+)$/);
-      if (rangeMatch) {
-        const start = Number(rangeMatch[1]);
-        const end = Number(rangeMatch[2]);
-
-        if (!Number.isInteger(start) || !Number.isInteger(end) || start <= 0 || end <= 0) {
-          hasInvalid = true;
-          return;
-        }
-
-        const [from, to] = start <= end ? [start, end] : [end, start];
-        for (let line = from; line <= to; line += 1) {
-          parsed.add(line - 1);
-        }
-        return;
-      }
-
-      const lineNumber = Number(token);
-      if (!Number.isInteger(lineNumber) || lineNumber <= 0) {
-        hasInvalid = true;
-        return;
-      }
-
-      parsed.add(lineNumber - 1);
-    });
-
-    return { lines: [...parsed].sort((a, b) => a - b), hasInvalid };
-  };
 
   const [{ isDragging }, drag] = useDrag(() => ({
     type: 'EDITOR_BLOCK',
@@ -585,36 +529,6 @@ export function EditorBlock({ block, index, onUpdate, onDelete, onMove, onInsert
               </Select>
             </div>
 
-            {editMode === 'restricted' && (
-              <div className="space-y-1">
-                <Label className="text-xs text-muted-foreground">편집 가능한 줄 입력</Label>
-                <Input
-                  value={editableLinesInput}
-                  onChange={(e) => setEditableLinesInput(e.target.value)}
-                  onBlur={() => {
-                    const { lines, hasInvalid } = parseEditableLines(editableLinesInput);
-                    onUpdate(block.id, {
-                      metadata: {
-                        ...block.metadata,
-                        editable: 'restricted',
-                        editableLines: lines.length ? lines : undefined,
-                      },
-                    });
-
-                    const normalized = lines
-                      .map((lineIndex) => String(lineIndex + 1))
-                      .join(',');
-                    setEditableLinesInput(normalized);
-
-                    if (hasInvalid) {
-                      toast.error('줄 번호 형식이 일부 올바르지 않습니다. 예: 2,4-6');
-                    }
-                  }}
-                  placeholder="줄 번호 입력..."
-                />
-              </div>
-            )}
-
             <CodeEditor
               code={block.content}
               language="jsx"
@@ -638,6 +552,7 @@ export function EditorBlock({ block, index, onUpdate, onDelete, onMove, onInsert
         blockRef.current = node;
         drop(node);
       }}
+      data-block-id={block.id}
       className={`group relative py-4 pl-10 pr-12 border transition-colors rounded-md ${isOverCurrent ? 'border-primary/40 bg-muted/20' : 'border-transparent hover:border-border/60 hover:bg-muted/20'} ${isDragging ? 'opacity-50' : 'opacity-100'}`}
     >
       <div

@@ -226,6 +226,20 @@ export const blogApi = {
       method: 'DELETE',
     }),
 
+  getDrafts: () =>
+    request<any[]>('/drafts'),
+  getDraft: (id: string) =>
+    request<any>(`/drafts/${encodeURIComponent(id)}`),
+  saveDraft: (draft: any) =>
+    request<any>('/drafts', {
+      method: 'POST',
+      body: JSON.stringify(draft),
+    }),
+  deleteDraft: (id: string) =>
+    request<boolean>(`/drafts/${encodeURIComponent(id)}`, {
+      method: 'DELETE',
+    }),
+
   uploadImage: async (file: File) => {
     const formData = new FormData();
     formData.append('file', file);

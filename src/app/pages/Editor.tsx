@@ -60,13 +60,12 @@ export function Editor() {
   const [draftList, setDraftList] = useState<DraftPost[]>([]);
   const [showDraftListDialog, setShowDraftListDialog] = useState(false);
   const autoSaveTimer = useRef<NodeJS.Timeout | null>(null);
+  const lastSavedStateRef = useRef<string>('');
   const deferredTitle = useDeferredValue(title);
   const deferredContent = useDeferredValue(content);
   const isEditMode = Boolean(slug);
 
-  const editorScrollRef = useRef<HTMLDivElement>(null);
-  const previewScrollRef = useRef<HTMLDivElement>(null);
-  const isSyncingScroll = useRef(false);
+
 
   const getEditorTagsWithSeries = () => [
     ...tags,
@@ -110,8 +109,13 @@ export function Editor() {
     setCurrentDraftId(null);
   };
 
-  const refreshDraftList = () => {
-    setDraftList(listDrafts());
+  const refreshDraftList = async () => {
+    try {
+      const drafts = await listDrafts();
+      setDraftList(drafts);
+    } catch {
+      toast.error('임시저장 목록을 불러오지 못했습니다.');
+    }
   };
 
   const validateSeriesNameInput = (value: string): boolean => {
@@ -176,7 +180,15 @@ export function Editor() {
         })
         .catch(() => toast.error('포스트를 불러오지 못했습니다.'));
     } else {
-      refreshDraftList();
+      setExistingPost(null);
+      setCurrentDraftId(null);
+      setTitle('');
+      setThumbnail('');
+      setSeriesName('');
+      setTags([]);
+      setContent([]);
+
+      void refreshDraftList();
     }
   }, [slug, isAdmin]);
 
@@ -185,21 +197,34 @@ export function Editor() {
       return;
     }
 
-    autoSaveTimer.current = setInterval(() => {
+    autoSaveTimer.current = setInterval(async () => {
       if (title || content.length > 0) {
-        const saved = saveDraft(
-          {
-            title,
-            thumbnail,
-            tags: getEditorTagsWithSeries(),
-            content,
-          },
-          currentDraftId ?? undefined,
-        );
-        if (!currentDraftId) {
-          setCurrentDraftId(saved.id);
+        const currentStateStr = JSON.stringify({
+          title,
+          thumbnail,
+          tags: getEditorTagsWithSeries(),
+          content,
+        });
+        if (currentStateStr === lastSavedStateRef.current) return;
+        lastSavedStateRef.current = currentStateStr;
+
+        try {
+          const saved = await saveDraft(
+            {
+              title,
+              thumbnail,
+              tags: getEditorTagsWithSeries(),
+              content,
+            },
+            currentDraftId ?? undefined,
+          );
+          if (!currentDraftId) {
+            setCurrentDraftId(saved.id);
+          }
+          toast.success('자동 저장됨', { duration: 1000 });
+        } catch {
+          // ignore save background errors
         }
-        toast.success('자동 저장됨', { duration: 1000 });
       }
     }, 30000);
 
@@ -303,7 +328,7 @@ export function Editor() {
       setIsPublishing(true);
       const savedPost = await action;
       if (currentDraftId) {
-        clearDraft(currentDraftId);
+        await clearDraft(currentDraftId).catch(() => {});
         setCurrentDraftId(null);
       }
       toast.success(slug ? '포스트가 수정되었습니다' : '포스트가 발행되었습니다');
@@ -345,7 +370,7 @@ export function Editor() {
     }
   };
 
-  const handleManualSave = () => {
+  const handleManualSave = async () => {
     if (isSavingDraft || isPublishing) {
       return;
     }
@@ -365,7 +390,7 @@ export function Editor() {
         content.length > 0;
 
       if (hasEditorValue) {
-        const saved = saveDraft(
+        const saved = await saveDraft(
           {
             title,
             thumbnail,
@@ -379,6 +404,8 @@ export function Editor() {
       } else {
         toast.message('저장할 내용이 아직 없습니다.');
       }
+    } catch {
+      toast.error('임시저장에 실패했습니다.');
     } finally {
       setIsSavingDraft(false);
     }
@@ -390,15 +417,15 @@ export function Editor() {
       return;
     }
 
-    refreshDraftList();
+    void refreshDraftList();
     setShowDraftListDialog(true);
   };
 
-  const handleSelectDraft = (draftId: string) => {
-    const draft = getDraftById(draftId);
+  const handleSelectDraft = async (draftId: string) => {
+    const draft = await getDraftById(draftId);
     if (!draft) {
       toast.error('선택한 임시저장을 찾을 수 없습니다.');
-      refreshDraftList();
+      void refreshDraftList();
       return;
     }
 
@@ -413,15 +440,19 @@ export function Editor() {
     toast.success('새 글 작성을 시작합니다.');
   };
 
-  const handleDeleteDraft = (draftId: string) => {
-    clearDraft(draftId);
+  const handleDeleteDraft = async (draftId: string) => {
+    try {
+      await clearDraft(draftId);
 
-    if (currentDraftId === draftId) {
-      setCurrentDraftId(null);
+      if (currentDraftId === draftId) {
+        setCurrentDraftId(null);
+      }
+
+      void refreshDraftList();
+      toast.success('임시저장을 삭제했습니다.');
+    } catch {
+      toast.error('임시저장을 삭제하지 못했습니다.');
     }
-
-    refreshDraftList();
-    toast.success('임시저장을 삭제했습니다.');
   };
 
   const processImportedMarkdown = (markdown: string) => {
@@ -514,22 +545,7 @@ export function Editor() {
     processImportedMarkdown(markdown);
   };
 
-  const handleScroll = (source: 'editor' | 'preview') => {
-    if (isSyncingScroll.current) return;
 
-    const sourceEl = source === 'editor' ? editorScrollRef.current : previewScrollRef.current;
-    const targetEl = source === 'editor' ? previewScrollRef.current : editorScrollRef.current;
-
-    if (!sourceEl || !targetEl) return;
-
-    isSyncingScroll.current = true;
-    const scrollPercentage = sourceEl.scrollTop / (sourceEl.scrollHeight - sourceEl.clientHeight);
-    targetEl.scrollTop = scrollPercentage * (targetEl.scrollHeight - targetEl.clientHeight);
-
-    setTimeout(() => {
-      isSyncingScroll.current = false;
-    }, 50);
-  };
 
   if (!isAdmin) {
     return (
@@ -580,7 +596,7 @@ export function Editor() {
 
   return (
     <DndProvider backend={HTML5Backend}>
-      <div className="min-h-screen bg-background">
+      <div className="h-screen flex flex-col bg-background overflow-hidden">
         <EditorToolbar
           onSave={handleManualSave}
           onOpenDraftList={handleOpenDraftList}
@@ -592,17 +608,13 @@ export function Editor() {
           disableDraftActions={isEditMode}
         />
 
-        <div className="flex min-h-[calc(100vh-7.5rem)]">
+        <div className="flex-1 flex min-h-0">
           <EditorSidebar />
 
-          <div className="flex-1 p-5 md:p-7 lg:p-9 min-w-0">
-            <PanelGroup direction="horizontal" className="h-[calc(100vh-10rem)] min-h-[calc(100vh-10rem)]">
-              <Panel defaultSize={50} minSize={30} className="h-full">
-                <section 
-                  className="min-w-0 pr-3 h-full overflow-y-auto"
-                  ref={editorScrollRef}
-                  onScroll={() => handleScroll('editor')}
-                >
+          <div className="flex-1 p-5 md:p-7 lg:p-9 min-w-0 flex flex-col">
+            <PanelGroup direction="horizontal" className="flex-1 min-h-0">
+              <Panel defaultSize={50} minSize={30} className="h-full flex flex-col">
+                <section className="flex-1 min-w-0 pr-3 overflow-y-auto">
                   <EditorCanvas
                     content={content}
                     onChange={setContent}
@@ -612,14 +624,10 @@ export function Editor() {
 
               <PanelResizeHandle className="w-px self-stretch bg-border hover:bg-foreground/30 transition-colors" />
 
-              <Panel defaultSize={50} minSize={25} className="h-full">
-                <aside 
-                  className="min-w-0 pl-3 h-full overflow-y-auto"
-                  ref={previewScrollRef}
-                  onScroll={() => handleScroll('preview')}
-                >
-                  <h3 className="text-sm text-muted-foreground mb-4">미리보기</h3>
-                  <article className="prose prose-lg dark:prose-invert max-w-none">
+              <Panel defaultSize={50} minSize={25} className="h-full flex flex-col">
+                <aside className="flex-1 min-w-0 pl-3 overflow-y-auto">
+                  <h3 className="text-sm text-muted-foreground mb-4 shrink-0">미리보기</h3>
+                  <article className="prose prose-lg dark:prose-invert max-w-none pb-24">
                     <h1>{deferredTitle || '제목 없음'}</h1>
                     <ContentRenderer content={deferredContent} plainReadOnlyInteractive />
                   </article>
