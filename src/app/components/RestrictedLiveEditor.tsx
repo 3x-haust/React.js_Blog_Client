@@ -4,13 +4,9 @@ interface RestrictedLiveEditorProps {
   code: string;
   onChange: (code: string) => void;
   language?: string;
-  theme: any; // Prism theme
+  theme: any;
 }
 
-/**
- * 특정 텍스트를 [[수정가능]] 형태로 감싸면 해당 부분만 인라인 에디터로 변환합니다.
- * 예: const name = "[[John]]";
- */
 export function RestrictedLiveEditor({
   code: initialCode,
   onChange,
@@ -21,14 +17,12 @@ export function RestrictedLiveEditor({
     setCode(initialCode);
   }, [initialCode]);
 
-  // [[value]] 패턴을 찾아내는 정규식
   const INLINE_EDIT_REGEX = /\[\[(.*?)\]\]/g;
 
   const handleInlineChange = (lineIndex: number, partIndex: number, newValue: string) => {
     const lines = code.split('\n');
     const line = lines[lineIndex];
     
-    // 해당 라인의 모든 [[...]]를 찾아서 n번째 것만 교체
     let currentPart = 0;
     const newLine = line.replace(INLINE_EDIT_REGEX, (match, p1) => {
       if (currentPart === partIndex) {
@@ -52,7 +46,6 @@ export function RestrictedLiveEditor({
   return (
     <div className="font-mono text-sm leading-relaxed overflow-x-auto bg-muted/20 text-foreground dark:bg-zinc-900 p-6 rounded-lg border border-border">
       {lines.map((line, lineIndex) => {
-        // 해당 라인에 [[...]]가 있는지 확인
         const parts = line.split(INLINE_EDIT_REGEX);
         const matches = [...line.matchAll(INLINE_EDIT_REGEX)];
         
@@ -70,7 +63,6 @@ export function RestrictedLiveEditor({
             <span className="w-8 text-right mr-4 opacity-30 select-none text-xs">{lineIndex + 1}</span>
             <div className="flex flex-wrap items-center whitespace-pre">
               {parts.map((part, partIndex) => {
-                // 짝수 인덱스는 일반 텍스트, 홀수 인덱스는 [[...]] 내부 값
                 const isEditablePart = partIndex % 2 !== 0;
                 
                 if (isEditablePart) {

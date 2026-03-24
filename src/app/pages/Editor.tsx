@@ -236,7 +236,6 @@ export function Editor() {
           }
           toast.success('자동 저장됨', { duration: 1000 });
         } catch {
-          // ignore save background errors
         }
       }
     }, 30000);

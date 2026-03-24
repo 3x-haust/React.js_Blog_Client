@@ -92,7 +92,7 @@ export function LiveCodeBlock({
       >
         <LiveProvider
           key={key}
-          code={code.replace(/\[\[(.*?)\]\]/g, '$1')} // 렌더링 시 마커 제거
+          code={code.replace(/\[\[(.*?)\]\]/g, '$1')}
           scope={combinedScope}
           theme={theme === 'dark' ? themes.vsDark : themes.github}
           language="jsx"
@@ -126,7 +126,7 @@ export function LiveCodeBlock({
     >
       <LiveProvider
         key={key}
-        code={code.replace(/\[\[(.*?)\]\]/g, '$1')} // 실제 실행 시에는 마커 제거
+        code={code.replace(/\[\[(.*?)\]\]/g, '$1')}
         scope={combinedScope}
         theme={theme === 'dark' ? themes.vsDark : themes.github}
         language="jsx"
