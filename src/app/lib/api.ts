@@ -187,10 +187,10 @@ export const blogApi = {
       body: JSON.stringify({ content }),
     }),
 
-  updateComment: (slug: string, commentId: string, content: string) =>
+  updateComment: (slug: string, commentId: string, content: string, nickname?: string) =>
     request<Comment>(`/posts/${encodeURIComponent(slug)}/comments/${encodeURIComponent(commentId)}`, {
       method: 'PATCH',
-      body: JSON.stringify({ content }),
+      body: JSON.stringify({ content, nickname }),
     }),
 
   deleteComment: (slug: string, commentId: string) =>

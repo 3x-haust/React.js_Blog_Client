@@ -73,7 +73,7 @@ export function CommentSection({ postSlug }: CommentSectionProps) {
       <div className="mb-6">
         <CommentForm
           nickname={nickname}
-          onChangeNickname={setNickname}
+          onChangeNickname={(v) => setNickname(v.replace(/\s/g, ''))}
           onRandomizeNickname={handleRandomizeNickname}
           onSubmit={async (content) => {
             await blogApi.createComment(postSlug, { nickname, content });
@@ -96,10 +96,12 @@ export function CommentSection({ postSlug }: CommentSectionProps) {
                 comment={comment}
                 onReply={() => setReplyTo(comment.id)}
                 onEdit={isAdmin && comment.isAdminReply ? async () => {
+                  const nextNickname = window.prompt('닉네임을 수정하세요.', comment.nickname);
+                  if (nextNickname === null) return;
                   const nextContent = window.prompt('댓글 내용을 수정하세요.', comment.content);
-                  const trimmed = nextContent?.trim();
-                  if (!trimmed) return;
-                  await blogApi.updateComment(postSlug, comment.id, trimmed);
+                  const trimmedContent = nextContent?.trim();
+                  if (!trimmedContent) return;
+                  await blogApi.updateComment(postSlug, comment.id, trimmedContent, nextNickname.trim() || undefined);
                   loadComments();
                 } : undefined}
                 onDelete={async () => {
@@ -119,10 +121,12 @@ export function CommentSection({ postSlug }: CommentSectionProps) {
                       key={reply.id}
                       comment={reply}
                       onEdit={isAdmin && reply.isAdminReply ? async () => {
+                        const nextNickname = window.prompt('닉네임을 수정하세요.', reply.nickname);
+                        if (nextNickname === null) return;
                         const nextContent = window.prompt('댓글 내용을 수정하세요.', reply.content);
-                        const trimmed = nextContent?.trim();
-                        if (!trimmed) return;
-                        await blogApi.updateComment(postSlug, reply.id, trimmed);
+                        const trimmedContent = nextContent?.trim();
+                        if (!trimmedContent) return;
+                        await blogApi.updateComment(postSlug, reply.id, trimmedContent, nextNickname.trim() || undefined);
                         loadComments();
                       } : undefined}
                       onDelete={async () => {

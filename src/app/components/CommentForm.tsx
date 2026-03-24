@@ -68,7 +68,7 @@ export function CommentForm({
           <div className="flex gap-2">
             <Button
               onClick={handleSubmit}
-              disabled={!content.trim() || isSubmitting}
+              disabled={!content.trim() || (!parentId && !nickname.trim()) || isSubmitting}
               size="sm"
             >
               {isSubmitting
