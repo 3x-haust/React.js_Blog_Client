@@ -5,14 +5,14 @@ import { HTML5Backend } from 'react-dnd-html5-backend';
 import { Plus, Trash2, X } from 'lucide-react';
 import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels';
 import { adminAuth, blogApi } from '../lib/api';
-import {
-  saveDraft,
+import { saveDraft,
   clearDraft,
   calculateReadingTime,
   listDrafts,
   getDraftById,
   type DraftPost,
 } from '../lib/storage';
+import { exportContentToMarkdown, downloadMarkdown } from '../lib/markdownExport';
 import { Post, ContentBlock } from '../types';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
@@ -525,25 +525,9 @@ export function Editor() {
     }
   };
 
-  const handlePasteMarkdown = (markdown: string) => {
-    const hasAnyEditorContent =
-      Boolean(title.trim()) ||
-      Boolean(thumbnail.trim()) ||
-      Boolean(seriesName.trim()) ||
-      tags.length > 0 ||
-      content.length > 0;
 
-    if (hasAnyEditorContent) {
-      const shouldReplace = window.confirm(
-        '현재 작성 중인 내용이 마크다운 내용으로 교체됩니다. 계속할까요?',
-      );
-      if (!shouldReplace) {
-        return;
-      }
-    }
 
-    processImportedMarkdown(markdown);
-  };
+
 
 
 
@@ -601,7 +585,10 @@ export function Editor() {
           onSave={handleManualSave}
           onOpenDraftList={handleOpenDraftList}
           onImportMarkdown={handleImportMarkdown}
-          onPasteMarkdown={handlePasteMarkdown}
+          onExportMarkdown={() => {
+            const md = exportContentToMarkdown(title, content);
+            downloadMarkdown(title || 'export', md);
+          }}
           onPublish={() => setShowPublishDialog(true)}
           isSaving={isSavingDraft}
           isPublishing={isPublishing}

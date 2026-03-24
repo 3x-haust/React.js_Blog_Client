@@ -16,6 +16,8 @@ import { toast } from 'sonner';
 interface EditorBlockProps {
   block: ContentBlock;
   index: number;
+  isSelected?: boolean;
+  onToggleSelect?: (id: string, multi: boolean) => void;
   onUpdate: (id: string, updates: Partial<ContentBlock>) => void;
   onDelete: (id: string) => void;
   onMove: (fromIndex: number, toIndex: number) => void;
@@ -31,7 +33,7 @@ interface ChecklistItem {
   text: string;
 }
 
-export function EditorBlock({ block, index, onUpdate, onDelete, onMove, onInsertBlock }: EditorBlockProps) {
+export function EditorBlock({ block, index, isSelected = false, onToggleSelect, onUpdate, onDelete, onMove, onInsertBlock }: EditorBlockProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const blockRef = useRef<HTMLDivElement | null>(null);
   const isDividerOrLinebreakBlock = block.type === 'divider' || block.type === 'linebreak';
@@ -560,11 +562,26 @@ export function EditorBlock({ block, index, onUpdate, onDelete, onMove, onInsert
         drop(node);
       }}
       data-block-id={block.id}
-      className={`group relative py-4 pl-10 pr-12 border transition-colors rounded-md ${isOverCurrent ? 'border-primary/40 bg-muted/20' : 'border-transparent hover:border-border/60 hover:bg-muted/20'} ${isDragging ? 'opacity-50' : 'opacity-100'}`}
+      className={`group relative py-4 pl-10 pr-12 border transition-colors rounded-md ${isSelected ? 'border-primary/60 bg-primary/5' : isOverCurrent ? 'border-primary/40 bg-muted/20' : 'border-transparent hover:border-border/60 hover:bg-muted/20'} ${isDragging ? 'opacity-50' : 'opacity-100'}`}
+      onClick={(e) => {
+        if (!onToggleSelect) return;
+        onToggleSelect(block.id, e.metaKey || e.ctrlKey);
+      }}
     >
       <div
-        className={`absolute left-2 opacity-70 group-hover:opacity-100 transition-opacity flex items-center ${isDividerOrLinebreakBlock ? 'top-1/2 -translate-y-1/2' : 'top-4'}`}
+        className={`absolute left-2 opacity-70 group-hover:opacity-100 transition-opacity flex items-center gap-0.5 ${isDividerOrLinebreakBlock ? 'top-1/2 -translate-y-1/2' : 'top-4'}`}
       >
+        <input
+          type="checkbox"
+          checked={isSelected}
+          onChange={(e) => {
+            e.stopPropagation();
+            if (onToggleSelect) onToggleSelect(block.id, e.nativeEvent instanceof MouseEvent ? e.nativeEvent.metaKey || e.nativeEvent.ctrlKey : false);
+          }}
+          onClick={(e) => e.stopPropagation()}
+          className="w-3 h-3 accent-primary cursor-pointer opacity-0 group-hover:opacity-100 data-[checked]:opacity-100"
+          style={{ opacity: isSelected ? 1 : undefined }}
+        />
         <button
           ref={(node) => {
             drag(node);
