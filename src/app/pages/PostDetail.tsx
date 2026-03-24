@@ -47,10 +47,18 @@ export function PostDetail() {
       const foundPost = await blogApi.getPost(slug);
       setPost(foundPost);
 
+      const VIEWED_POSTS_KEY = 'blog-viewed-posts';
+      const viewedPosts = JSON.parse(localStorage.getItem(VIEWED_POSTS_KEY) || '[]');
+      const alreadyViewed = viewedPosts.includes(slug);
+
       const [seriesResult] = await Promise.allSettled([
         blogApi.getSeriesPosts(slug),
-        blogApi.incrementView(slug),
+        !alreadyViewed ? blogApi.incrementView(slug) : Promise.resolve(null),
       ]);
+
+      if (!alreadyViewed) {
+        localStorage.setItem(VIEWED_POSTS_KEY, JSON.stringify([...viewedPosts, slug]));
+      }
 
       if (seriesResult.status === 'fulfilled') {
         setSeriesInfo(seriesResult.value);
@@ -116,9 +124,15 @@ export function PostDetail() {
     <div className="relative">
       <ReadingProgress />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-12">
-          <article className="max-w-3xl">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="relative">
+          <aside className="hidden xl:block absolute -right-72 top-0 h-full">
+            <div className="sticky top-32 w-64">
+              <TableOfContents content={post.content} />
+            </div>
+          </aside>
+
+          <article className="w-full">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -158,7 +172,7 @@ export function PostDetail() {
                   ))}
                 </div>
 
-                <h1 className="text-4xl md:text-5xl mb-6 leading-tight">
+                <h1 className="text-4xl md:text-5xl mb-6 leading-tight font-bold">
                   {post.title}
                 </h1>
 
@@ -182,50 +196,66 @@ export function PostDetail() {
                 </div>
               </div>
 
-              {post.thumbnail && (
-                <div className="mb-12 rounded-xl overflow-hidden">
-                  <img
-                    src={post.thumbnail}
-                    alt={post.title}
-                    className="w-full h-auto"
+              <div className="relative">
+                <aside className="hidden xl:block absolute -left-28 top-0 h-full">
+                  <div className="sticky top-32">
+                    <ReactionBar
+                      slug={post.slug}
+                      heartCount={post.heartCount}
+                      onReact={async () => {
+                        const refreshed = await blogApi.getPost(post.slug);
+                        setPost(refreshed);
+                      }}
+                    />
+                  </div>
+                </aside>
+
+                {post.thumbnail && (
+                  <div className="relative mb-12">
+                    <div className="rounded-xl overflow-hidden shadow-2xl">
+                      <img
+                        src={post.thumbnail}
+                        alt={post.title}
+                        className="w-full h-auto"
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {seriesInfo?.series && seriesInfo.posts.length > 0 && (
+                  <SeriesNavigator
+                    series={seriesInfo.series}
+                    currentPost={post}
+                    posts={seriesInfo.posts}
+                  />
+                )}
+
+                <div className="prose prose-lg dark:prose-invert max-w-none mb-12">
+                  <ContentRenderer content={post.content} plainReadOnlyInteractive />
+                </div>
+
+                <div className="xl:hidden fixed bottom-28 right-8 z-50">
+                  <ReactionBar
+                    slug={post.slug}
+                    heartCount={post.heartCount}
+                    onReact={async () => {
+                      const refreshed = await blogApi.getPost(post.slug);
+                      setPost(refreshed);
+                    }}
                   />
                 </div>
-              )}
 
-              {seriesInfo?.series && seriesInfo.posts.length > 0 && (
-                <SeriesNavigator
-                  series={seriesInfo.series}
-                  currentPost={post}
-                  posts={seriesInfo.posts}
-                />
-              )}
+                <RelatedPosts currentPost={post} />
 
-              <div className="prose prose-lg dark:prose-invert max-w-none mb-12">
-                <ContentRenderer content={post.content} plainReadOnlyInteractive />
-              </div>
-
-              <ReactionBar
-                slug={post.slug}
-                heartCount={post.heartCount}
-                onReact={async () => {
-                  const refreshed = await blogApi.getPost(post.slug);
-                  setPost(refreshed);
-                }}
-              />
-
-              <RelatedPosts currentPost={post} />
-
-              <div className="mt-16">
-                <CommentSection postSlug={post.slug} />
+                <div className="mt-16">
+                  <div className="xl:hidden mb-12">
+                    <TableOfContents content={post.content} />
+                  </div>
+                  <CommentSection postSlug={post.slug} />
+                </div>
               </div>
             </motion.div>
           </article>
-
-          <aside className="hidden lg:block">
-            <div className="sticky top-24">
-              <TableOfContents content={post.content} />
-            </div>
-          </aside>
         </div>
       </div>
 
@@ -234,7 +264,7 @@ export function PostDetail() {
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
           onClick={scrollToTop}
-          className="fixed bottom-24 md:bottom-8 right-8 w-12 h-12 bg-primary text-primary-foreground rounded-full shadow-lg hover:shadow-xl transition-shadow flex items-center justify-center z-40"
+          className="fixed bottom-8 right-8 w-12 h-12 bg-primary text-primary-foreground rounded-full shadow-lg hover:shadow-xl transition-shadow flex items-center justify-center z-40"
         >
           <ArrowUp className="w-5 h-5" />
           <span className="sr-only">맨 위로</span>

@@ -14,6 +14,7 @@ export function ReactionBar({ slug, heartCount, onReact }: ReactionBarProps) {
   const [displayHeartCount, setDisplayHeartCount] = useState(heartCount);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [justReacted, setJustReacted] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     setDisplayHeartCount(heartCount);
@@ -34,9 +35,7 @@ export function ReactionBar({ slug, heartCount, onReact }: ReactionBarProps) {
   }, [slug]);
 
   const handleHeart = async () => {
-    if (isSubmitting) {
-      return;
-    }
+    if (isSubmitting) return;
 
     try {
       setIsSubmitting(true);
@@ -57,21 +56,24 @@ export function ReactionBar({ slug, heartCount, onReact }: ReactionBarProps) {
   };
 
   return (
-    <div className="border-y border-border py-6 my-8">
-      <h3 className="text-sm font-semibold mb-4 text-muted-foreground">
-        이 포스트가 도움이 되었나요?
-      </h3>
+    <div className="flex flex-col items-center gap-1 p-2 bg-muted/30 backdrop-blur-sm border border-border rounded-full w-fit">
       <motion.button
         onClick={handleHeart}
         disabled={isSubmitting}
-        className="flex items-center gap-2 px-4 py-2 bg-muted hover:bg-muted/80 disabled:opacity-70 rounded-full transition-colors"
-        whileHover={isSubmitting ? undefined : { scale: 1.05 }}
-        whileTap={isSubmitting ? undefined : { scale: 0.95 }}
-        animate={justReacted ? { scale: [1, 1.2, 1], transition: { duration: 0.4 } } : {}}
+        className={`w-12 h-12 flex items-center justify-center rounded-full transition-all ${
+          liked 
+            ? 'bg-red-500/10 text-red-500 border border-red-500/20' 
+            : 'hover:bg-muted text-muted-foreground border border-transparent'
+        }`}
+        whileHover={{ scale: 1.1 }}
+        whileTap={{ scale: 0.9 }}
+        animate={justReacted ? { scale: [1, 1.4, 1] } : {}}
       >
-        <Heart className={`w-5 h-5 ${liked ? 'fill-current text-red-500' : ''}`} />
-        <span className="text-sm font-medium">{displayHeartCount}</span>
+        <Heart className={`w-5 h-5 ${liked ? 'fill-current' : ''}`} />
       </motion.button>
+      <span className="text-xs font-medium text-muted-foreground mb-1">
+        {displayHeartCount}
+      </span>
     </div>
   );
 }
