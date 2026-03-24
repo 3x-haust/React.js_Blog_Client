@@ -198,6 +198,14 @@ export function Editor() {
 
   useEffect(() => {
     if (isEditMode) {
+      document.title = title ? `Editing: ${title} - 3xhaust blog` : 'Editing - 3xhaust blog';
+    } else {
+      document.title = 'New Post - 3xhaust blog';
+    }
+  }, [isEditMode, title]);
+
+  useEffect(() => {
+    if (isEditMode) {
       return;
     }
 

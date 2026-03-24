@@ -9,6 +9,7 @@ import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
 import { Info, AlertTriangle, CheckCircle, XCircle } from 'lucide-react';
+import { LinkPreview } from './LinkPreview';
 
 interface ContentRendererProps {
   content: ContentBlock[];
@@ -218,6 +219,18 @@ export function ContentRenderer({
           }
 
           case 'link':
+            if (!block.metadata?.url) return null;
+            const isExternal = block.metadata.url.startsWith('http');
+            const isStandalone = !block.content || block.content === block.metadata.url;
+
+            if (isExternal && isStandalone) {
+              return (
+                <div key={block.id} data-block-id={block.id}>
+                  <LinkPreview url={block.metadata.url} />
+                </div>
+              );
+            }
+
             return (
               <p key={block.id} data-block-id={block.id} className="mb-6">
                 <a

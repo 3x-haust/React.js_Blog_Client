@@ -2,8 +2,13 @@ import { Link } from 'react-router';
 import { motion } from 'motion/react';
 import { Home } from 'lucide-react';
 import { Button } from '../components/ui/button';
+import { useEffect } from 'react';
 
 export function NotFound() {
+  useEffect(() => {
+    document.title = 'Page Not Found - 3xhaust blog';
+  }, []);
+
   return (
     <div className="min-h-[80vh] flex items-center justify-center px-4">
       <motion.div

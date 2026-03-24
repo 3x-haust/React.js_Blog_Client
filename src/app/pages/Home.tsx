@@ -95,6 +95,10 @@ export function Home() {
   }, []);
 
   useEffect(() => {
+    document.title = '3xhaust blog';
+  }, []);
+
+  useEffect(() => {
     blogApi
       .getPosts()
       .then(setPosts)

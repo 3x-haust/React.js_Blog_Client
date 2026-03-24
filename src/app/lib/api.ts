@@ -280,6 +280,15 @@ export const blogApi = {
 
     return doUpload(false);
   },
+
+  getMetadata: (url: string) =>
+    request<{
+      title: string;
+      description: string;
+      image: string;
+      siteName: string;
+      url: string;
+    }>(`/metadata?url=${encodeURIComponent(url)}`),
 };
 
 export const visitor = {

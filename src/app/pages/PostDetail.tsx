@@ -76,6 +76,12 @@ export function PostDetail() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, [slug]);
 
+  useEffect(() => {
+    if (post?.title) {
+      document.title = `${post.title} - 3xhaust blog`;
+    }
+  }, [post?.title]);
+
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };

@@ -27,6 +27,14 @@ export function TagPage() {
 
     blogApi.getPosts().then(setPosts).catch(() => setPosts([]));
   }, [isTagDetail]);
+
+  useEffect(() => {
+    if (isTagDetail) {
+      document.title = `#${currentTag} - 3xhaust blog`;
+    } else {
+      document.title = 'Tags - 3xhaust blog';
+    }
+  }, [isTagDetail, currentTag]);
   
   const filteredPosts = posts
     .filter(post => post.tags.some(postTag => postTag.toLowerCase() === normalizedTag))
