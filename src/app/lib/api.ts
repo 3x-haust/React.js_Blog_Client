@@ -72,7 +72,7 @@ const request = async <T>(path: string, init?: RequestInit): Promise<T> => {
 
     const payload = await parseResponse<T>(response);
 
-    if (response.status === 401 && !retry && !path.startsWith('/auth/')) {
+    if (response.status === 401 && !retry && path !== '/auth/refresh' && path !== '/auth/login') {
       try {
         await tryRefreshToken();
         return doFetch(true);
