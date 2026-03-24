@@ -24,6 +24,10 @@ export function PostCard({ post, index }: PostCardProps) {
               <img
                 src={post.thumbnail}
                 alt={post.title}
+                loading={index < 3 ? "eager" : "lazy"}
+                fetchPriority={index === 0 ? "high" : "auto"}
+                width={800}
+                height={450}
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />

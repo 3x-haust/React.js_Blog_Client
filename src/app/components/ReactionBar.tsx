@@ -60,6 +60,7 @@ export function ReactionBar({ slug, heartCount, onReact }: ReactionBarProps) {
       <motion.button
         onClick={handleHeart}
         disabled={isSubmitting}
+        aria-label="좋아요"
         className={`w-12 h-12 flex items-center justify-center rounded-full transition-all ${
           liked 
             ? 'bg-red-500/10 text-red-500 border border-red-500/20' 

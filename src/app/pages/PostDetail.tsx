@@ -216,6 +216,10 @@ export function PostDetail() {
                       <img
                         src={post.thumbnail}
                         alt={post.title}
+                        fetchPriority="high"
+                        loading="eager"
+                        width={1200}
+                        height={630}
                         className="w-full h-auto"
                       />
                     </div>
