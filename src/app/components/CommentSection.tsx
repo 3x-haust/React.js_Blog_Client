@@ -95,13 +95,19 @@ export function CommentSection({ postSlug }: CommentSectionProps) {
               <CommentItem
                 comment={comment}
                 onReply={() => setReplyTo(comment.id)}
-                onEdit={isAdmin && comment.isAdminReply ? async () => {
-                  const nextNickname = window.prompt('닉네임을 수정하세요.', comment.nickname);
-                  if (nextNickname === null) return;
-                  const nextContent = window.prompt('댓글 내용을 수정하세요.', comment.content);
-                  const trimmedContent = nextContent?.trim();
-                  if (!trimmedContent) return;
-                  await blogApi.updateComment(postSlug, comment.id, trimmedContent, nextNickname.trim() || undefined);
+                onEdit={isAdmin ? async () => {
+                  if (comment.isAdminReply) {
+                    const nextNickname = window.prompt('관리자 닉네임을 수정하세요.', comment.nickname);
+                    if (nextNickname === null) return;
+                    const nextContent = window.prompt('답글 내용을 수정하세요.', comment.content);
+                    const trimmedContent = nextContent?.trim();
+                    if (!trimmedContent) return;
+                    await blogApi.updateComment(postSlug, comment.id, trimmedContent, nextNickname.trim() || undefined);
+                  } else {
+                    const nextNickname = window.prompt('유저의 닉네임을 수정하세요.', comment.nickname);
+                    if (!nextNickname?.trim()) return;
+                    await blogApi.updateComment(postSlug, comment.id, comment.content, nextNickname.trim());
+                  }
                   loadComments();
                 } : undefined}
                 onDelete={async () => {
@@ -120,13 +126,19 @@ export function CommentSection({ postSlug }: CommentSectionProps) {
                     <CommentItem
                       key={reply.id}
                       comment={reply}
-                      onEdit={isAdmin && reply.isAdminReply ? async () => {
-                        const nextNickname = window.prompt('닉네임을 수정하세요.', reply.nickname);
-                        if (nextNickname === null) return;
-                        const nextContent = window.prompt('댓글 내용을 수정하세요.', reply.content);
-                        const trimmedContent = nextContent?.trim();
-                        if (!trimmedContent) return;
-                        await blogApi.updateComment(postSlug, reply.id, trimmedContent, nextNickname.trim() || undefined);
+                      onEdit={isAdmin ? async () => {
+                        if (reply.isAdminReply) {
+                          const nextNickname = window.prompt('관리자 닉네임을 수정하세요.', reply.nickname);
+                          if (nextNickname === null) return;
+                          const nextContent = window.prompt('답글 내용을 수정하세요.', reply.content);
+                          const trimmedContent = nextContent?.trim();
+                          if (!trimmedContent) return;
+                          await blogApi.updateComment(postSlug, reply.id, trimmedContent, nextNickname.trim() || undefined);
+                        } else {
+                          const nextNickname = window.prompt('유저의 닉네임을 수정하세요.', reply.nickname);
+                          if (!nextNickname?.trim()) return;
+                          await blogApi.updateComment(postSlug, reply.id, reply.content, nextNickname.trim());
+                        }
                         loadComments();
                       } : undefined}
                       onDelete={async () => {
