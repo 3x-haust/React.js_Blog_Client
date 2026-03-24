@@ -14,6 +14,7 @@ export function EditorCanvas({ content, onChange }: EditorCanvasProps) {
   const [isQuickAddOpen, setIsQuickAddOpen] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const clipboardRef = useRef<ContentBlock[]>([]);
+  const lastClickedIndexRef = useRef<number>(-1);
 
   const quickAddBlockTypes: Array<{ type: BlockType; label: string }> = [
     { type: 'paragraph', label: '텍스트' },
@@ -165,8 +166,19 @@ export function EditorCanvas({ content, onChange }: EditorCanvasProps) {
     });
   };
 
-  const handleToggleSelect = useCallback((id: string, multi: boolean) => {
+  const handleToggleSelect = useCallback((id: string, multi: boolean, shift: boolean, index: number) => {
     setSelectedIds((prev) => {
+      if (shift && lastClickedIndexRef.current >= 0) {
+        const from = Math.min(lastClickedIndexRef.current, index);
+        const to = Math.max(lastClickedIndexRef.current, index);
+        const rangeIds = content.slice(from, to + 1).map((b) => b.id);
+        const next = new Set(prev);
+        rangeIds.forEach((rid) => next.add(rid));
+        return next;
+      }
+
+      lastClickedIndexRef.current = index;
+
       if (multi) {
         const next = new Set(prev);
         if (next.has(id)) {
@@ -176,12 +188,13 @@ export function EditorCanvas({ content, onChange }: EditorCanvasProps) {
         }
         return next;
       }
+
       if (prev.size === 1 && prev.has(id)) {
         return new Set();
       }
       return new Set([id]);
     });
-  }, []);
+  }, [content]);
 
   const handleCopySelected = () => {
     const ordered = content.filter((b) => selectedIds.has(b.id));
