@@ -194,7 +194,7 @@ export function Home() {
             남김없이 쏟아
           </span>
           <br />
-          결과를 만들어내는 개발자 <span className="font-bold">유성윤(3xhaust)</span>의 블로그입니다.
+          결과를 만들어내는 개발자 <span className="font-bold">유성윤</span>입니다.
         </p>
       </motion.div>
 
