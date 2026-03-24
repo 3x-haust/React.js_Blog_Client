@@ -218,6 +218,16 @@ export const parseMarkdownToEditorContent = (rawMarkdown: string): ParsedMarkdow
       continue;
     }
 
+    if (trimmed === '<br>' || trimmed === '<br/>' || trimmed === '<br />') {
+      blocks.push({
+        id: createBlockId(),
+        type: 'linebreak',
+        content: '',
+      });
+      index += 1;
+      continue;
+    }
+
     const imageMatch = /^!\[(.*?)\]\((.*?)\)$/.exec(trimmed);
     if (imageMatch) {
       blocks.push({
@@ -404,6 +414,9 @@ export const parseMarkdownToEditorContent = (rawMarkdown: string): ParsedMarkdow
         /^(#{1,6})\s+/.test(nextTrimmed) ||
         nextTrimmed === '---' ||
         nextTrimmed === '***' ||
+        nextTrimmed === '<br>' ||
+        nextTrimmed === '<br/>' ||
+        nextTrimmed === '<br />' ||
         /^```/.test(nextTrimmed) ||
         /^>/.test(nextTrimmed) ||
         /^!\[(.*?)\]\((.*?)\)$/.test(nextTrimmed) ||

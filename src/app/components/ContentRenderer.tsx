@@ -265,6 +265,9 @@ export function ContentRenderer({
               </blockquote>
             );
 
+          case 'linebreak':
+            return <div key={block.id} data-block-id={block.id} className="h-8 w-full" aria-hidden="true" />;
+
           case 'divider':
             return <div key={block.id} data-block-id={block.id}><Separator className="my-8" /></div>;
 

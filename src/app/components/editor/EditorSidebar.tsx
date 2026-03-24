@@ -16,6 +16,7 @@ import {
   Sigma,
   Play,
   Frame,
+  CornerDownLeft,
 } from 'lucide-react';
 import { BlockType } from '../../types';
 import { Card } from '../ui/card';
@@ -37,6 +38,7 @@ const BLOCK_TYPES = [
   { type: 'quote' as BlockType, icon: Quote, label: 'Quote', color: 'text-foreground' },
   { type: 'callout' as BlockType, icon: Info, label: 'Callout', color: 'text-foreground' },
   { type: 'math' as BlockType, icon: Sigma, label: 'Math', color: 'text-foreground' },
+  { type: 'linebreak' as BlockType, icon: CornerDownLeft, label: 'Line Break', color: 'text-muted-foreground' },
 ];
 
 function DraggableBlock({ type, icon: Icon, label, color }: typeof BLOCK_TYPES[0]) {

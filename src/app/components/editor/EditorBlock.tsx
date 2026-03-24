@@ -34,7 +34,7 @@ interface ChecklistItem {
 export function EditorBlock({ block, index, onUpdate, onDelete, onMove, onInsertBlock }: EditorBlockProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const blockRef = useRef<HTMLDivElement | null>(null);
-  const isDividerBlock = block.type === 'divider';
+  const isDividerOrLinebreakBlock = block.type === 'divider' || block.type === 'linebreak';
 
   const [{ isDragging }, drag] = useDrag(() => ({
     type: 'EDITOR_BLOCK',
@@ -538,8 +538,15 @@ export function EditorBlock({ block, index, onUpdate, onDelete, onMove, onInsert
           </div>
         );
 
+      case 'linebreak':
+        return (
+          <div className="py-2 flex justify-center text-muted-foreground/30 italic select-none text-sm font-medium">
+            [ 여백 공간 ]
+          </div>
+        );
+
       case 'divider':
-        return <div className="h-px bg-border" />;
+        return <div className="h-px bg-border my-2" />;
 
       default:
         return null;
@@ -556,7 +563,7 @@ export function EditorBlock({ block, index, onUpdate, onDelete, onMove, onInsert
       className={`group relative py-4 pl-10 pr-12 border transition-colors rounded-md ${isOverCurrent ? 'border-primary/40 bg-muted/20' : 'border-transparent hover:border-border/60 hover:bg-muted/20'} ${isDragging ? 'opacity-50' : 'opacity-100'}`}
     >
       <div
-        className={`absolute left-2 opacity-70 group-hover:opacity-100 transition-opacity flex items-center ${isDividerBlock ? 'top-1/2 -translate-y-1/2' : 'top-4'}`}
+        className={`absolute left-2 opacity-70 group-hover:opacity-100 transition-opacity flex items-center ${isDividerOrLinebreakBlock ? 'top-1/2 -translate-y-1/2' : 'top-4'}`}
       >
         <button
           ref={(node) => {
@@ -569,7 +576,7 @@ export function EditorBlock({ block, index, onUpdate, onDelete, onMove, onInsert
       </div>
 
       <div
-        className={`absolute right-2 opacity-70 group-hover:opacity-100 transition-opacity z-10 ${isDividerBlock ? 'top-1/2 -translate-y-1/2' : 'top-3'}`}
+        className={`absolute right-2 opacity-70 group-hover:opacity-100 transition-opacity z-10 ${isDividerOrLinebreakBlock ? 'top-1/2 -translate-y-1/2' : 'top-3'}`}
       >
         <Button
           variant="ghost"

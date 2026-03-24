@@ -12,7 +12,8 @@ export type BlockType =
   | 'quote'
   | 'callout'
   | 'math'
-  | 'interactive';
+  | 'interactive'
+  | 'linebreak';
 
 export interface ContentBlock {
   id: string;

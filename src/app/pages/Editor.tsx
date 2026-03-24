@@ -772,14 +772,14 @@ export function Editor() {
                         <button
                           type="button"
                           onClick={() => handleSelectDraft(draft.id)}
-                          className="min-w-0 text-left"
+                          className="min-w-0 flex-1 text-left"
                         >
                           <p className="font-medium truncate">
                             {draft.title.trim() || '제목 없는 임시글'}
                           </p>
                         </button>
 
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 shrink-0">
                           {currentDraftId === draft.id && (
                             <Badge variant="secondary">현재 작업중</Badge>
                           )}
