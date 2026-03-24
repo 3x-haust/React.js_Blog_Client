@@ -1,12 +1,13 @@
 import { createBrowserRouter } from 'react-router';
 import { Root } from './pages/Root';
 import { Home } from './pages/Home';
-import { PostDetail } from './pages/PostDetail';
-import { Editor } from './pages/Editor';
-import { TagPage } from './pages/TagPage';
-import { NotFound } from './pages/NotFound';
-import { useEffect } from 'react';
+import { useEffect, lazy } from 'react';
  
+const PostDetail = lazy(() => import('./pages/PostDetail').then(m => ({ default: m.PostDetail })));
+const Editor = lazy(() => import('./pages/Editor').then(m => ({ default: m.Editor })));
+const TagPage = lazy(() => import('./pages/TagPage').then(m => ({ default: m.TagPage })));
+const NotFound = lazy(() => import('./pages/NotFound').then(m => ({ default: m.NotFound })));
+
 function SitemapRedirect() {
   useEffect(() => {
     window.location.href = 'https://api-blog.3xhaust.dev/sitemap.xml';
