@@ -58,6 +58,7 @@ export function Editor() {
   const [adminLoginError, setAdminLoginError] = useState('');
   const [currentDraftId, setCurrentDraftId] = useState<string | null>(null);
   const [draftList, setDraftList] = useState<DraftPost[]>([]);
+  const [isPublic, setIsPublic] = useState(true);
   const [showDraftListDialog, setShowDraftListDialog] = useState(false);
   const autoSaveTimer = useRef<NodeJS.Timeout | null>(null);
   const lastSavedStateRef = useRef<string>('');
@@ -96,6 +97,7 @@ export function Editor() {
     setSeriesName(nextSeriesTag ? nextSeriesTag.slice('series:'.length).trim() : '');
     setTags(draftTags.filter((tag) => !tag.toLowerCase().startsWith('series:')));
     setContent(draft.content || []);
+    setIsPublic(draft.isPublic ?? true);
     setCurrentDraftId(draft.id);
   };
 
@@ -173,6 +175,7 @@ export function Editor() {
           setCurrentDraftId(null);
           setTitle(post.title);
           setThumbnail(post.thumbnail || '');
+          setIsPublic(post.isPublic);
           const nextSeriesTag = post.tags.find((tag) => tag.toLowerCase().startsWith('series:'));
           setSeriesName(nextSeriesTag ? nextSeriesTag.slice('series:'.length).trim() : '');
           setTags(post.tags.filter((tag) => !tag.toLowerCase().startsWith('series:')));
@@ -184,6 +187,7 @@ export function Editor() {
       setCurrentDraftId(null);
       setTitle('');
       setThumbnail('');
+      setIsPublic(true);
       setSeriesName('');
       setTags([]);
       setContent([]);
@@ -215,6 +219,7 @@ export function Editor() {
               thumbnail,
               tags: getEditorTagsWithSeries(),
               content,
+              isPublic,
             },
             currentDraftId ?? undefined,
           );
@@ -236,12 +241,24 @@ export function Editor() {
   }, [
     title,
     thumbnail,
-    tags,
     content,
+    isPublic,
     seriesName,
     currentDraftId,
     isEditMode,
   ]);
+
+  const handleToggleVisibility = async () => {
+    if (!existingPost || !slug) return;
+    try {
+      const nextIsPublic = !isPublic;
+      await blogApi.updateVisibility(slug, nextIsPublic);
+      setIsPublic(nextIsPublic);
+      toast.success(nextIsPublic ? '포스트가 공개로 설정되었습니다.' : '포스트가 비공개로 설정되었습니다.');
+    } catch {
+      toast.error('공개여부 변경에 실패했습니다.');
+    }
+  };
 
   useEffect(() => {
     if (!hasUnsavedEditChanges) {
@@ -316,6 +333,7 @@ export function Editor() {
       thumbnail,
       tags: getEditorTagsWithSeries(),
       content,
+      isPublic,
       views: existingPost?.views ?? 0,
       readingTime: calculateReadingTime(content),
     };
@@ -589,6 +607,8 @@ export function Editor() {
             const md = exportContentToMarkdown(title, content);
             downloadMarkdown(title || 'export', md);
           }}
+          isPublic={isPublic}
+          onToggleVisibility={isEditMode ? handleToggleVisibility : undefined}
           onPublish={() => setShowPublishDialog(true)}
           isSaving={isSavingDraft}
           isPublishing={isPublishing}
@@ -755,36 +775,42 @@ export function Editor() {
                       key={draft.id}
                       className="w-full rounded-md border border-border p-3 hover:bg-muted/40 transition-colors"
                     >
-                      <div className="flex items-center justify-between gap-3">
+                      <div className="grid grid-cols-[1fr_auto] gap-4 items-center w-full min-w-0">
                         <button
                           type="button"
                           onClick={() => handleSelectDraft(draft.id)}
-                          className="min-w-0 flex-1 text-left"
+                          className="min-w-0 text-left block flex-1"
                         >
-                          <p className="font-medium truncate">
+                          <p className="font-medium truncate text-sm md:text-base pr-2 mb-1">
                             {draft.title.trim() || '제목 없는 임시글'}
+                          </p>
+                          <p className="text-xs text-muted-foreground truncate opacity-70">
+                            {new Date(draft.updatedAt).toLocaleString()} • 블록{' '}
+                            {draft.content?.length ?? 0}개
                           </p>
                         </button>
 
                         <div className="flex items-center gap-2 shrink-0">
                           {currentDraftId === draft.id && (
-                            <Badge variant="secondary">현재 작업중</Badge>
+                            <Badge variant="secondary" className="whitespace-nowrap h-6 px-1.5 text-[10px] select-none">
+                              현재 작업 중
+                            </Badge>
                           )}
                           <Button
                             type="button"
                             variant="ghost"
                             size="icon"
-                            className="h-7 w-7"
-                            onClick={() => handleDeleteDraft(draft.id)}
+                            className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10 shrink-0"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDeleteDraft(draft.id);
+                            }}
                             aria-label="임시저장 삭제"
                           >
-                            <Trash2 className="w-4 h-4 text-destructive" />
+                            <Trash2 className="w-4 h-4" />
                           </Button>
                         </div>
                       </div>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        {new Date(draft.updatedAt).toLocaleString('ko-KR')} · 블록 {draft.content.length}개
-                      </p>
                     </div>
                   ))
                 )}

@@ -42,6 +42,7 @@ export interface Post {
   thumbnail?: string;
   tags: string[];
   content: ContentBlock[];
+  isPublic: boolean;
   createdAt: string;
   updatedAt: string;
   views: number;

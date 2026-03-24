@@ -8,6 +8,8 @@ interface EditorToolbarProps {
   onPublish: () => void;
   onImportMarkdown: (file: File) => void;
   onExportMarkdown: () => void;
+  isPublic?: boolean;
+  onToggleVisibility?: () => void;
   isSaving?: boolean;
   isPublishing?: boolean;
   disableDraftActions?: boolean;
@@ -19,6 +21,8 @@ export function EditorToolbar({
   onPublish,
   onImportMarkdown,
   onExportMarkdown,
+  isPublic = true,
+  onToggleVisibility,
   isSaving = false,
   isPublishing = false,
   disableDraftActions = false,
@@ -52,6 +56,17 @@ export function EditorToolbar({
           >
             {disableDraftActions ? '수정 모드' : '에디터'}
           </Button>
+
+          {onToggleVisibility && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onToggleVisibility}
+              className={`text-xs ml-2 ${!isPublic ? 'border-destructive/50 text-destructive bg-destructive/5' : ''}`}
+            >
+              {isPublic ? '공개' : '비공개'}
+            </Button>
+          )}
         </div>
 
         <div className="flex items-center gap-2">

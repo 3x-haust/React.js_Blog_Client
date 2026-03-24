@@ -32,6 +32,11 @@ export function PostCard({ post, index }: PostCardProps) {
 
           <div className="p-6 flex-1 flex flex-col">
             <div className="flex flex-wrap gap-2 mb-3">
+              {!post.isPublic && (
+                <span className="px-2 py-1 text-xs bg-destructive text-destructive-foreground rounded-md font-bold uppercase transition-transform group-hover:scale-105">
+                  비공개
+                </span>
+              )}
               {post.tags
                 .filter((tag) => !tag.toLowerCase().startsWith('series:'))
                 .map(tag => (

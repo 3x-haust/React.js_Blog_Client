@@ -18,6 +18,7 @@ export interface DraftPost {
   thumbnail?: string;
   tags: string[];
   content: Post['content'];
+  isPublic: boolean;
   updatedAt: string;
 }
 
@@ -142,6 +143,7 @@ export const saveDraft = async (post: Partial<Post>, draftId?: string): Promise<
     thumbnail: post.thumbnail ?? '',
     tags: post.tags ?? [],
     content: post.content ?? [],
+    isPublic: post.isPublic ?? true,
   });
   return result;
 };

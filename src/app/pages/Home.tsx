@@ -2,7 +2,7 @@ import { useState, useMemo, useEffect } from 'react';
 import { motion } from 'motion/react';
 import { Search } from 'lucide-react';
 import { useSearchParams } from 'react-router';
-import { blogApi } from '../lib/api';
+import { adminAuth, blogApi } from '../lib/api';
 import { Post } from '../types';
 import { PostCard } from '../components/PostCard';
 import { Input } from '../components/ui/input';
@@ -88,6 +88,11 @@ export function Home() {
   const [searchQuery, setSearchQuery] = useState(searchParams.get('q') || '');
   const [selectedCategory, setSelectedCategory] = useState<string>('전체');
   const [sortType, setSortType] = useState<SortType>('latest');
+  const [isAdmin, setIsAdmin] = useState(() => adminAuth.isCachedAuthenticated());
+
+  useEffect(() => {
+    adminAuth.check().then(setIsAdmin).catch(() => setIsAdmin(false));
+  }, []);
 
   useEffect(() => {
     blogApi
@@ -119,15 +124,21 @@ export function Home() {
     const allTags = posts
       .flatMap((post) => post.tags)
       .filter((tag) => !tag.toLowerCase().startsWith('series:'));
-    return ['전체', ...Array.from(new Set(allTags))];
-  }, [posts]);
+    const base = ['전체', ...Array.from(new Set(allTags))];
+    if (isAdmin) {
+      base.push('비공개');
+    }
+    return base;
+  }, [posts, isAdmin]);
 
   const hasTags = categories.length > 1;
 
   const filteredPosts = useMemo(() => {
     let filtered = posts;
 
-    if (selectedCategory !== '전체') {
+    if (selectedCategory === '비공개') {
+      filtered = filtered.filter((post) => !post.isPublic);
+    } else if (selectedCategory !== '전체') {
       filtered = filtered.filter((post) =>
         post.tags.includes(selectedCategory),
       );

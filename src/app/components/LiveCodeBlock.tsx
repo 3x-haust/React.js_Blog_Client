@@ -2,8 +2,9 @@ import { useEffect, useState } from 'react';
 import { LiveProvider, LiveError, LivePreview } from 'react-live';
 import { themes } from 'prism-react-renderer';
 import { motion } from 'motion/react';
-import { RotateCcw, Code2 } from 'lucide-react';
+import { RotateCcw, Code2, Trash2 } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
+import { adminAuth, blogApi, authApi, visitor } from '../lib/api';
 import { Button } from './ui/button';
 import { RestrictedLiveEditor } from './RestrictedLiveEditor';
 import { FullLiveEditor } from './FullLiveEditor';
@@ -43,6 +44,10 @@ const defaultScope = {
   CardContent,
   CardHeader,
   CardTitle,
+  adminAuth,
+  blogApi,
+  authApi,
+  visitor,
 };
 
 export function LiveCodeBlock({
@@ -79,22 +84,6 @@ export function LiveCodeBlock({
   const isRestricted = actualEditable === 'restricted';
 
   if (isReadOnly) {
-    if (plainReadOnly) {
-      return (
-        <LiveProvider
-          key={key}
-          code={code.replace(/\[\[(.*?)\]\]/g, '$1')} // 렌더링 시 마커 제거
-          scope={combinedScope}
-          theme={theme === 'dark' ? themes.vsDark : themes.github}
-          language="jsx"
-        >
-          <div className="my-6 p-0 bg-transparent">
-            <LivePreview />
-          </div>
-        </LiveProvider>
-      );
-    }
-
     return (
       <motion.div
         initial={{ opacity: 0, y: 20 }}

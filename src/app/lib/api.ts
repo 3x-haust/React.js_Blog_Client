@@ -226,6 +226,12 @@ export const blogApi = {
       method: 'DELETE',
     }),
 
+  updateVisibility: (slug: string, isPublic: boolean) =>
+    request<Post>(`/posts/${encodeURIComponent(slug)}/visibility`, {
+      method: 'PATCH',
+      body: JSON.stringify({ isPublic }),
+    }),
+
   getDrafts: () =>
     request<any[]>('/drafts'),
   getDraft: (id: string) =>
