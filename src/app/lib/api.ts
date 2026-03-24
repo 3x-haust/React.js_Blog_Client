@@ -241,25 +241,38 @@ export const blogApi = {
     }),
 
   uploadImage: async (file: File) => {
-    const formData = new FormData();
-    formData.append('file', file);
+    const doUpload = async (retry: boolean): Promise<string> => {
+      const formData = new FormData();
+      formData.append('file', file);
 
-    const response = await fetch(`${API_BASE}/uploads/image`, {
-      method: 'POST',
-      credentials: 'include',
-      body: formData,
-    });
+      const response = await fetch(`${API_BASE}/uploads/image`, {
+        method: 'POST',
+        credentials: 'include',
+        body: formData,
+      });
 
-    const payload = await parseResponse<{ url: string }>(response);
+      if (response.status === 401 && !retry) {
+        try {
+          await tryRefreshToken();
+          return doUpload(true);
+        } catch {
+          setAdminAuthenticated(false);
+        }
+      }
 
-    if (!response.ok || !payload.data?.url) {
-      const message = payload?.message?.join(', ') || '이미지 업로드에 실패했습니다.';
-      throw new Error(message);
-    }
+      const payload = await parseResponse<{ url: string }>(response);
 
-    return payload.data.url.startsWith('http')
-      ? payload.data.url
-      : `${API_BASE}${payload.data.url}`;
+      if (!response.ok || !payload.data?.url) {
+        const message = payload?.message?.join(', ') || '이미지 업로드에 실패했습니다.';
+        throw new Error(message);
+      }
+
+      return payload.data.url.startsWith('http')
+        ? payload.data.url
+        : `${API_BASE}${payload.data.url}`;
+    };
+
+    return doUpload(false);
   },
 };
 
