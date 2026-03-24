@@ -48,6 +48,12 @@ const markdownComponents: Components = {
   td: ({ ...props }) => (
     <td {...props} className="border border-border px-3 py-2 align-top" />
   ),
+  code: ({ ...props }) => (
+    <code
+      {...props}
+      className="bg-muted px-[0.3rem] py-[0.15rem] rounded-md text-[0.85em] font-mono text-foreground font-semibold border border-border/50"
+    />
+  ),
 };
 
 export function ContentRenderer({
