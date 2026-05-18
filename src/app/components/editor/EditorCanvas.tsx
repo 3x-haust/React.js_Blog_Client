@@ -15,6 +15,7 @@ export function EditorCanvas({ content, onChange }: EditorCanvasProps) {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const clipboardRef = useRef<ContentBlock[]>([]);
   const lastClickedIndexRef = useRef<number>(-1);
+  const canvasRef = useRef<HTMLDivElement | null>(null);
 
   const quickAddBlockTypes: Array<{ type: BlockType; label: string }> = [
     { type: 'paragraph', label: '텍스트' },
@@ -260,14 +261,22 @@ export function EditorCanvas({ content, onChange }: EditorCanvasProps) {
   const handleCanvasClick = (e: MouseEvent<HTMLDivElement>) => {
     if ((e.target as HTMLElement).closest('[data-block-id]')) return;
     setSelectedIds(new Set());
+    canvasRef.current?.focus();
   };
 
   return (
     <div
-      ref={drop}
+      ref={(node) => {
+        drop(node);
+        canvasRef.current = node;
+      }}
       onKeyDown={handleCanvasKeyDown}
+      onMouseDown={(e) => {
+        if ((e.target as HTMLElement).closest('[data-block-id]')) return;
+        canvasRef.current?.focus();
+      }}
       onClick={handleCanvasClick}
-      tabIndex={-1}
+      tabIndex={0}
       className={`group relative min-h-[500px] px-3 py-4 pb-14 outline-none ${isOver ? 'bg-muted/40' : ''}`}
     >
       {selectedIds.size > 0 && (
